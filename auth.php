@@ -1,201 +1,317 @@
 <?php
 session_start();
 
+// Database configuration
 $host = 'admin.dcism.org';
 $user = 's11820346';
 $pass = 'SEULRENE_kangseulgi';
 $db = 's11820346_im2';
 
-$mysqli = new mysqli($host, $user, $pass, $db);
-
-if ($mysqli->connect_error) {
-    die("Database connection failed: " . $mysqli->connect_error);
-}
-
-$mysqli->set_charset("utf8mb4");
-
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
+// Handle AJAX requests
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
     header('Content-Type: application/json');
-    $data = json_decode(file_get_contents('php://input'), true);
-
-    if ($data === null) {
-        echo json_encode(['success' => false, 'message' => 'Invalid request data']);
+    
+    try {
+        $mysqli = new mysqli($host, $user, $pass, $db);
+        
+        if ($mysqli->connect_error) {
+            throw new Exception("Database connection failed: " . $mysqli->connect_error);
+        }
+        
+        $mysqli->set_charset("utf8mb4");
+        
+        $data = json_decode(file_get_contents('php://input'), true);
+        
+        if ($data === null) {
+            throw new Exception('Invalid request data');
+        }
+        
+        if (isset($data['login'])) {
+            handleLogin($mysqli, $data);
+        } elseif (isset($data['signup'])) {
+            handleSignup($mysqli, $data);
+        } else {
+            throw new Exception('Invalid request type');
+        }
+        
+        $mysqli->close();
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'message' => $e->getMessage()]);
         exit;
     }
+}
 
-    if (isset($data['login'])) {
-        $response = ['success' => false, 'message' => ''];
+function handleLogin($mysqli, $data) {
+    $response = ['success' => false, 'message' => ''];
+    
+    // Validate input
+    if (empty($data['username']) || empty($data['password'])) {
+        $response['message'] = 'Please fill all fields';
+        echo json_encode($response);
+        exit;
+    }
+    
+    $sql = "SELECT u.id, u.user_name, u.password, u.user_type_id, t.user_type, 
+               u.is_locked, u.locked_until, u.login_attempts, u.is_active
+            FROM user_login u
+            JOIN user_type t ON u.user_type_id = t.id
+            WHERE u.user_name = ?";
+    
+    if ($stmt = $mysqli->prepare($sql)) {
+        $stmt->bind_param("s", $data['username']);
+        
+        if ($stmt->execute()) {
+            $stmt->store_result();
+            
+            if ($stmt->num_rows == 1) {
+                $id = $username = $hashed_password = $user_type_id = $user_type = null;
+                $is_locked = $locked_until = $login_attempts = $is_active = null;
 
-        if (empty($data['username']) || empty($data['password'])) {
-            $response['message'] = 'Please fill all fields';
-            echo json_encode($response);
-            exit;
-        }
-
-        $sql = "SELECT u.id, u.user_name, u.password, u.user_type_id, t.user_type, u.is_locked, u.locked_until 
-                FROM user_login u
-                JOIN user_type t ON u.user_type_id = t.id
-                WHERE u.user_name = ?";
-
-        if ($stmt = $mysqli->prepare($sql)) {
-            $stmt->bind_param("s", $data['username']);
-            if ($stmt->execute()) {
-                $stmt->store_result();
-                if ($stmt->num_rows == 1) {
-                    $stmt->bind_result($id, $username, $hashed_password, $user_type_id, $user_type, $is_locked, $locked_until);
-                    if ($stmt->fetch()) {
-                        if ($is_locked && strtotime($locked_until) > time()) {
-                            $response['message'] = 'Account locked. Try again after ' . date('H:i:s', strtotime($locked_until));
-                            echo json_encode($response);
-                            exit;
-                        }
-
-                        if (password_verify($data['password'], $hashed_password)) {
-                            $_SESSION["loggedin"] = true;
-                            $_SESSION["id"] = $id;
-                            $_SESSION["username"] = $username;
-                            $_SESSION["role"] = strtolower($user_type);
-
-                            $update_stmt = $mysqli->prepare("UPDATE user_login SET last_login = NOW(), login_attempts = 0, is_locked = 0 WHERE id = ?");
-                            if ($update_stmt) {
-                                $update_stmt->bind_param("i", $id);
-                                $update_stmt->execute();
-                                $update_stmt->close();
-                            }
-
-                            $response['success'] = true;
-                            $response['user'] = [
-                                'id' => $id,
-                                'username' => $username,
-                                'role' => strtolower($user_type)
-                            ];
+                $stmt->bind_result($id, $username, $hashed_password, $user_type_id, $user_type, 
+                                 $is_locked, $locked_until, $login_attempts, $is_active);
+                $stmt->fetch();
+                
+                // Check if account is active
+                if (!$is_active) {
+                    $response['message'] = 'Account is inactive. Please contact support.';
+                    echo json_encode($response);
+                    exit;
+                }
+                
+                // Check if account is locked
+                if ($is_locked && $locked_until && strtotime($locked_until) > time()) {
+                    $response['message'] = 'Account locked. Try again after ' . date('M j, Y H:i:s', strtotime($locked_until));
+                    echo json_encode($response);
+                    exit;
+                }
+                
+                // Verify password
+                if (password_verify($data['password'], $hashed_password)) {
+                  // Login successful - regenerate session ID to prevent fixation
+                  if (session_status() === PHP_SESSION_ACTIVE) {
+                      session_regenerate_id(true);
+                  } else {
+                      error_log("Session not active during regeneration attempt");
+                  }
+                  
+                  // Set session variables with proper sanitization
+                  $_SESSION = array(); // Clear existing session data first
+                  $_SESSION["loggedin"] = true;
+                  $_SESSION["id"] = (int)$id; // Ensure ID is integer
+                  $_SESSION["username"] = filter_var($username, FILTER_SANITIZE_STRING);
+                  $_SESSION["role"] = strtolower(filter_var($user_type, FILTER_SANITIZE_STRING));
+                  $_SESSION["user_type_id"] = (int)$user_type_id; // Ensure ID is integer
+                  $_SESSION["last_activity"] = time();
+                  $_SESSION["ip_address"] = $_SERVER['REMOTE_ADDR']; // Store IP for security checks
+                  $_SESSION["user_agent"] = $_SERVER['HTTP_USER_AGENT']; // Store user agent
+                  
+                  // Reset login attempts and update last login
+                  $update_sql = "UPDATE user_login 
+                                SET last_login = NOW(), 
+                                    login_attempts = 0, 
+                                    is_locked = 0,
+                                    locked_until = NULL
+                                WHERE id = ?";
+                  
+                  $update_stmt = $mysqli->prepare($update_sql);
+                  if ($update_stmt === false) {
+                      error_log("Prepare failed: " . $mysqli->error);
+                      $response['message'] = 'System error. Please try again later.';
+                      echo json_encode($response);
+                      exit;
+                  }
+                  
+                  $update_stmt->bind_param("i", $id);
+                  if (!$update_stmt->execute()) {
+                      error_log("Update failed: " . $update_stmt->error);
+                      // Don't fail login just because stats couldn't update
+                  }
+                  $update_stmt->close();
+                  
+                  // Prepare success response
+                  $response['success'] = true;
+                  $response['user'] = [
+                      'id' => (int)$id,
+                      'username' => filter_var($username, FILTER_SANITIZE_STRING),
+                      'role' => strtolower(filter_var($user_type, FILTER_SANITIZE_STRING)),
+                      'user_type_id' => (int)$user_type_id
+                  ];
+                  
+                  // Set secure session cookie parameters
+                  $cookieParams = session_get_cookie_params();
+                  session_set_cookie_params([
+                      'lifetime' => $cookieParams["lifetime"],
+                      'path' => '/',
+                      'domain' => $_SERVER['HTTP_HOST'],
+                      'secure' => true, // Requires HTTPS
+                      'httponly' => true,
+                      'samesite' => 'Strict'
+                  ]);
+                } else {
+                    // Invalid password
+                    $response['message'] = 'Invalid username or password';
+                    
+                    // Increment login attempts
+                    $attempts = $login_attempts + 1;
+                    $lock_account = $attempts >= 5;
+                    $lock_until = $lock_account ? date('Y-m-d H:i:s', strtotime('+30 minutes')) : null;
+                    
+                    $attempt_sql = "UPDATE user_login 
+                                   SET login_attempts = ?,
+                                       is_locked = ?,
+                                       locked_until = ?
+                                   WHERE id = ?";
+                    
+                    if ($attempt_stmt = $mysqli->prepare($attempt_sql)) {
+                        $locked = $lock_account ? 1 : 0;
+                        $attempt_stmt->bind_param("iisi", $attempts, $locked, $lock_until, $id);
+                        $attempt_stmt->execute();
+                        $attempt_stmt->close();
+                        
+                        if ($lock_account) {
+                            $response['message'] = 'Account locked. Try again after 30 minutes.';
                         } else {
-                            $response['message'] = 'Invalid username or password';
-                            $attempt_stmt = $mysqli->prepare("UPDATE user_login SET login_attempts = login_attempts + 1 WHERE id = ?");
-                            if ($attempt_stmt) {
-                                $attempt_stmt->bind_param("i", $id);
-                                $attempt_stmt->execute();
-                                $attempt_stmt->close();
-                            }
-
-                            $check_stmt = $mysqli->prepare("SELECT login_attempts FROM user_login WHERE id = ?");
-                            if ($check_stmt) {
-                                $check_stmt->bind_param("i", $id);
-                                $check_stmt->execute();
-                                $check_stmt->bind_result($attempts);
-                                $check_stmt->fetch();
-                                $check_stmt->close();
-
-                                if ($attempts >= 5) {
-                                    $lock_stmt = $mysqli->prepare("UPDATE user_login SET is_locked = 1, locked_until = DATE_ADD(NOW(), INTERVAL 30 MINUTE) WHERE id = ?");
-                                    if ($lock_stmt) {
-                                        $lock_stmt->bind_param("i", $id);
-                                        $lock_stmt->execute();
-                                        $lock_stmt->close();
-                                        $response['message'] = 'Account locked. Try again after 30 minutes.';
-                                    }
-                                }
-                            }
+                            $remaining_attempts = 5 - $attempts;
+                            $response['message'] = "Invalid credentials. {$remaining_attempts} attempts remaining.";
                         }
                     }
-                } else {
-                    $response['message'] = 'Username not found';
                 }
             } else {
-                $response['message'] = 'Database error';
+                $response['message'] = 'Username not found';
             }
-            $stmt->close();
         } else {
             $response['message'] = 'Database error';
         }
-
-        echo json_encode($response);
-        exit;
-
+        $stmt->close();
     } else {
-        $response = ['success' => false, 'message' => '', 'errors' => []];
+        $response['message'] = 'Database error';
+    }
+    
+    echo json_encode($response);
+    exit;
+}
 
-        if (empty(trim($data["username"]))) {
-            $response['errors']['username'] = "Please enter a username.";
-        } elseif (!preg_match('/^[a-zA-Z0-9_]+$/', trim($data["username"]))) {
-            $response['errors']['username'] = "Username can only contain letters, numbers, and underscores.";
-        } else {
-            $sql = "SELECT id FROM user_login WHERE user_name = ?";
-            if ($stmt = $mysqli->prepare($sql)) {
-                $param_username = trim($data["username"]);
-                $stmt->bind_param("s", $param_username);
-                if ($stmt->execute()) {
-                    $stmt->store_result();
-                    if ($stmt->num_rows == 1) {
-                        $response['errors']['username'] = "This username is already taken.";
-                    }
-                } else {
-                    $response['errors']['username'] = "Database error checking username.";
+function handleSignup($mysqli, $data) {
+    $response = ['success' => false, 'message' => '', 'errors' => []];
+    
+    // Validate username
+    if (empty(trim($data["username"]))) {
+        $response['errors']['username'] = "Please enter a username.";
+    } elseif (!preg_match('/^[a-zA-Z0-9_]+$/', trim($data["username"]))) {
+        $response['errors']['username'] = "Username can only contain letters, numbers, and underscores.";
+    } else {
+        $sql = "SELECT id FROM user_login WHERE user_name = ?";
+        if ($stmt = $mysqli->prepare($sql)) {
+            $param_username = trim($data["username"]);
+            $stmt->bind_param("s", $param_username);
+            
+            if ($stmt->execute()) {
+                $stmt->store_result();
+                
+                if ($stmt->num_rows == 1) {
+                    $response['errors']['username'] = "This username is already taken.";
                 }
-                $stmt->close();
+            } else {
+                $response['errors']['username'] = "Database error checking username.";
             }
+            $stmt->close();
         }
-
-        if (empty(trim($data["password"]))) {
-            $response['errors']['password'] = "Please enter a password.";
-        } elseif (strlen(trim($data["password"])) < 6) {
-            $response['errors']['password'] = "Password must have at least 6 characters.";
-        }
-
-        if (empty(trim($data["confirm_password"]))) {
-            $response['errors']['confirm_password'] = "Please confirm password.";
-        } elseif ($data["password"] != $data["confirm_password"]) {
-            $response['errors']['confirm_password'] = "Passwords did not match.";
-        }
-
-        if (empty($response['errors'])) {
-            $sql = "INSERT INTO user_login (user_name, password, user_type_id, date_registered, is_active) VALUES (?, ?, ?, NOW(), 1)";
+    }
+    
+    // Validate password
+    if (empty(trim($data["password"]))) {
+        $response['errors']['password'] = "Please enter a password.";
+    } elseif (strlen(trim($data["password"])) < 6) {
+        $response['errors']['password'] = "Password must have at least 6 characters.";
+    }
+    
+    // Validate confirm password
+    if (empty(trim($data["confirm_password"]))) {
+        $response['errors']['confirm_password'] = "Please confirm password.";
+    } elseif ($data["password"] != $data["confirm_password"]) {
+        $response['errors']['confirm_password'] = "Passwords did not match.";
+    }
+    
+    // Validate contact
+    if (empty(trim($data["contact"]))) {
+        $response['errors']['contact'] = "Please enter contact number.";
+    } elseif (!preg_match('/^[0-9]{10,15}$/', trim($data["contact"]))) {
+        $response['errors']['contact'] = "Please enter a valid contact number.";
+    }
+    
+    // Validate address
+    if (empty(trim($data["address"]))) {
+        $response['errors']['address'] = "Please enter address.";
+    }
+    
+    // If no errors, proceed with registration
+    if (empty($response['errors'])) {
+        // Start transaction
+        $mysqli->begin_transaction();
+        
+        try {
+            // Create user login
+            $sql = "INSERT INTO user_login 
+                    (user_name, password, user_type_id, date_registered, is_active, login_attempts) 
+                    VALUES (?, ?, 1, NOW(), 1, 0)";
+            
             if ($stmt = $mysqli->prepare($sql)) {
                 $param_username = trim($data["username"]);
                 $param_password = password_hash($data["password"], PASSWORD_DEFAULT);
-                $param_role = 1;
-
-                $stmt->bind_param("ssi", $param_username, $param_password, $param_role);
-
+                
+                $stmt->bind_param("ss", $param_username, $param_password);
+                
                 if ($stmt->execute()) {
                     $user_id = $stmt->insert_id;
-
-                    $sql_customer = "INSERT INTO customer (customer_name, user_id, date_registered) VALUES (?, ?, NOW())";
+                    
+                    // Create customer record
+                    $sql_customer = "INSERT INTO customer 
+                                     (customer_name, contact_number, address, user_id, date_registered) 
+                                     VALUES (?, ?, ?, ?, NOW())";
+                    
                     if ($stmt_customer = $mysqli->prepare($sql_customer)) {
-                        $stmt_customer->bind_param("si", $param_username, $user_id);
+                        $contact_number = (int)$data["contact"];
+                        $stmt_customer->bind_param("sisi", $param_username, $contact_number, $data["address"], $user_id);
+                        
                         if ($stmt_customer->execute()) {
+                            $mysqli->commit();
+                            
                             $response['success'] = true;
-                            $response['message'] = "Registration successful!";
+                            $response['message'] = "Registration successful! You can now login.";
                             $response['user'] = [
                                 'id' => $user_id,
                                 'username' => $param_username,
                                 'role' => 'customer'
                             ];
                         } else {
-                            $response['message'] = "Error creating customer record.";
+                            throw new Exception("Error creating customer record.");
                         }
                         $stmt_customer->close();
                     } else {
-                        $response['message'] = "Error preparing customer statement.";
+                        throw new Exception("Error preparing customer statement.");
                     }
                 } else {
-                    $response['message'] = "Oops! Something went wrong. Please try again later.";
+                    throw new Exception("Oops! Something went wrong. Please try again later.");
                 }
                 $stmt->close();
             } else {
-                $response['message'] = "Error preparing statement.";
+                throw new Exception("Error preparing statement.");
             }
-        } else {
-            $response['message'] = "Please fix the errors below.";
+        } catch (Exception $e) {
+            $mysqli->rollback();
+            $response['message'] = $e->getMessage();
         }
-
-        echo json_encode($response);
-        exit;
+    } else {
+        $response['message'] = "Please fix the errors below.";
     }
+    
+    echo json_encode($response);
+    exit;
 }
+
+// If not an AJAX request, continue to output HTML
 ?>
 
-<!-- HTML Below -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -214,76 +330,73 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </head>
 <body>
     <div class="container">
-      <div class="forms-container">
-          <div class="signin-signup">
-              <!-- Login Form -->
-              <form action="#" method="POST" class="sign-in-form">
-                  <h2 class="title">Sign in</h2>
-                  <div class="input-field">
-                      <i class="fas fa-user"></i>
-                      <input type="text" name="username" placeholder="Username" required>
-                  </div>
-                  <div class="input-field">
-                      <i class="fas fa-lock"></i>
-                      <input type="password" name="password" placeholder="Password" required>
-                  </div>
-                  <input type="submit" value="Login" class="btn solid">
-                  <div class="error-message" style="color: red; margin-top: 10px;"></div>
-                  <p>Or go back to our <a href="#">Homepage</a>!</p>
-              </form>
+    <div class="forms-container">
+      <div class="signin-signup">
+        <!-- Login Form -->
+        <form id="loginForm" class="sign-in-form">
+          <h2 class="title">Sign in</h2>
+          <div class="input-field">
+            <i class="fas fa-user"></i>
+            <input type="text" name="username" placeholder="Username" required>
+          </div>
+          <div class="input-field">
+            <i class="fas fa-lock"></i>
+            <input type="password" name="password" placeholder="Password" required>
+          </div>
+          <button type="submit" class="btn solid">Login</button>
+          <div class="error-message"></div>
+          <p>Or go back to our <a href="#">Homepage</a>!</p>
+        </form>
 
-              <!-- Registration Form -->
-              <form action="#" method="POST" class="sign-up-form">
-                  <h2 class="title">Sign up</h2>
-                  <div class="input-field">
-                      <i class="fas fa-user"></i>
-                      <input type="text" name="username" placeholder="Username" required>
-                  </div>
-                  <div class="input-field">
-                      <i class="fas fa-envelope"></i>
-                      <input type="contact" name="contact" placeholder="Contact Number" required>
-                  </div>
-                  <div class="input-field">
-                    <i class="fas fa-envelope"></i>
-                    <input type="address" name="address" placeholder="Address" required>
-                  </div>
-                  <div class="input-field">
-                      <i class="fas fa-lock"></i>
-                      <input type="password" name="password" placeholder="Password" required>
-                  </div>
-                  <div class="input-field">
-                      <i class="fas fa-lock"></i>
-                      <input type="password" name="confirm_password" placeholder="Confirm Password" required>
-                  </div>
-                  <input type="submit" value="Sign Up" class="btn solid">
-                  <div class="error-message" style="color: red; margin-top: 10px;"></div>
-                  <p>Or go back to our <a href="#">Homepage</a>!</p>
-              </form>
+        <!-- Registration Form -->
+        <form id="signupForm" class="sign-up-form">
+          <h2 class="title">Sign up</h2>
+          <div class="input-field">
+            <i class="fas fa-user"></i>
+            <input type="text" name="username" placeholder="Username" required>
           </div>
-          
-          <div class="panels-container">
-              <div class="panel left-panel">
-                  <div class="content">
-                      <h3>New user?</h3>
-                      <br>
-                      <p>Join us today and unlock a world of possibilities. Signing up is quick, easy, and gives you access to all our features!</p>
-                      <br>
-                      <button class="btn transparent" id="sign-up-btn">Sign up</button>
-                  </div>
-                  <img src="img/log.svg" alt="" class="image">
-              </div>
-              <div class="panel right-panel">
-                  <div class="content">
-                      <h3>One of us?</h3>
-                      <br>
-                      <p>Welcome back! Sign in to continue exploring, sharing, and connecting with our awesome community.</p>
-                      <br>
-                      <button class="btn transparent" id="sign-in-btn">Sign in</button>
-                  </div>
-                  <img src="img/register.svg" alt="" class="image">
-              </div>
+          <div class="input-field">
+            <i class="fas fa-phone"></i>
+            <input type="tel" name="contact" placeholder="Contact Number" required>
           </div>
+          <div class="input-field">
+            <i class="fas fa-map-marker-alt"></i>
+            <input type="text" name="address" placeholder="Address" required>
+          </div>
+          <div class="input-field">
+            <i class="fas fa-lock"></i>
+            <input type="password" name="password" placeholder="Password" required>
+          </div>
+          <div class="input-field">
+            <i class="fas fa-lock"></i>
+            <input type="password" name="confirm_password" placeholder="Confirm Password" required>
+          </div>
+          <button type="submit" class="btn solid">Sign Up</button>
+          <div class="error-message"></div>
+          <div class="success-message"></div>
+          <p>Or go back to our <a href="#">Homepage</a>!</p>
+        </form>
       </div>
+      
+      <div class="panels-container">
+        <div class="panel left-panel">
+          <div class="content">
+            <h3>New user?</h3>
+            <p>Join us today and unlock a world of possibilities!</p>
+            <button class="btn transparent" id="sign-up-btn">Sign up</button>
+          </div>
+          <img src="img/log.svg" alt="" class="image">
+        </div>
+        <div class="panel right-panel">
+          <div class="content">
+            <h3>One of us?</h3>
+            <p>Welcome back! Sign in to continue your experience.</p>
+            <button class="btn transparent" id="sign-in-btn">Sign in</button>
+          </div>
+          <img src="img/register.svg" alt="" class="image">
+        </div>
+      </div>
+    </div>
   </div>
         <script src="js/sign3.js"></script>
         <script type="text/javascript" src="js/new_sign_in.js" defer></script>
