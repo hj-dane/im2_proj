@@ -18,6 +18,7 @@ html, body {
     padding: 10px 0% 25px; 
     width: 100%;
     box-sizing: border-box;
+    font-size: 20px;
 }
 
 .navbar-brand img {
@@ -65,21 +66,22 @@ html, body {
 .prodcontainer {
     display: flex;
     justify-content: space-between;
-    max-width: 1000px;
+    max-width: 2500px;
     margin: auto;
-    padding-top: 18px;
-    padding-bottom: 35px;
+    padding-top: 20px;
+    gap: 70px;
+    row-gap: 15px;
 }
 
 .column {
-    width: 48%;
+    width: 150%;
     display: flex;
     flex-direction: column;
+    margin-top: 2%;
 }
 
-
 .form-group {
-    margin-bottom: 34px;
+    margin-bottom: 70px;
 }
 
 label {
@@ -87,12 +89,13 @@ label {
     font-weight: bold;
     margin-bottom: 5px;
 }
+
 input, textarea {
     width: 100%;
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
-    background-color: #a0a7ec;
+    background-color: #ffffff;
 }
 
 .image-upload {
@@ -106,8 +109,9 @@ input, textarea {
     border-radius: 5px;
     text-align: center;
 }
-.submit-btn {
-    background-color: navy;
+
+.submit-btn, .btn {
+    background-color: #000;
     color: white;
     padding: 10px 20px;
     border: none;
@@ -116,6 +120,15 @@ input, textarea {
     display: block;
     width: 100%;
     text-align: center;
+}
+
+.dropdown-menu{
+    width: 100%;
+}
+
+.dropdown-item:hover{
+    color: #000;
+    background-color: #e6e3e3;
 }
 
 .custom-footer {
