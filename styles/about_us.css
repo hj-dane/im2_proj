@@ -1,0 +1,342 @@
+.navbar {
+    height: 95px;
+    align-items: center; 
+    font-size: 1.2rem;
+    display: flex;
+    justify-content: space-between; 
+    padding: 0 2%;
+}
+
+.navbar-nav {
+    display: flex;
+    align-items: center; 
+    gap: 15px; 
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+}
+
+.navbar-buttons {
+    display: flex;
+    align-items: center;
+    gap: 10px; 
+}
+
+.navbar-buttons .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 50px; 
+    padding: 8px 16px;
+}
+
+.navbar-brand img {
+    height: 125px; 
+    width: 110px;
+}
+
+.navbar-custom {
+    position: fixed; 
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    background-color: #000;
+    padding: 20px 2%;
+}
+
+.nav-link {
+    color: white !important;
+}
+
+.nav-link:hover {
+    color: bisque !important;
+}
+
+.bi-list {
+    font-size: 24px;
+    color: white;
+}
+
+@media (max-width: 992px) {
+    .navbar-buttons {
+        flex-direction: row; 
+    }
+}
+
+.offcanvas{
+    background-color: whitesmoke;
+}
+
+.accordion-item {
+    text-align: left;
+}
+
+.accordion-button {
+    background-color: whitesmoke;
+    font-size: 18px;
+    text-align: left;
+    padding: 12px 16px; 
+}
+
+.accordion-header{
+    background-color: whitesmoke;
+    font-size: 18px;
+}
+
+.accordion-body {
+    background-color: whitesmoke;
+    font-size: 18px;
+    padding: 12px 16px; 
+}
+
+.list-group-item {
+    text-align: left;
+    padding: 10px 16px; 
+}
+
+.accordion-button::after {
+    margin-left: auto; 
+}
+
+.offcanvas-footer {
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    width: 100%;
+    padding: 10px 20px;
+    background: #f8f9fa;
+    text-align: center;
+}
+
+body {
+    padding-top: 70px;
+    background-color: whitesmoke;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+  
+
+main{
+    margin: 50px;
+    flex: 1;
+}
+
+h1,h3{
+    text-align: center;
+    padding-top: 1%;
+    padding-bottom: 2%;
+}
+
+h4{
+    text-align: center;
+    line-height: 130%;
+    padding-bottom: 2%;
+}
+
+.card {
+    transition: box-shadow 0.3s ease-in-out, transform 0.2s ease-in-out;
+}
+
+.card:hover {
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2); 
+    transform: translateY(-5px); 
+}
+
+.card-text {
+    font-size: 1.4rem; 
+    color: black; 
+    line-height: 1.1; 
+    text-align: center; 
+}
+
+.card-img-top {
+    width: 100%;  
+    height: 225px; 
+    object-fit: cover; 
+}
+
+.row{
+    padding-bottom: 20px;
+}
+
+hr{
+    padding-top: 20px;
+}
+
+.custom-footer {
+    background-color: #000;
+    color: white;
+    padding: 15px 20px;
+    width: 100%;
+    height: 100px;
+}
+
+.social-icon {
+    height: 40px;
+}
+
+.heading {
+    background-color: #656ec1;
+    color: white;
+    text-align: center;
+    padding: 35px;
+    padding-top: 65px;
+}
+
+.container {
+    width: 80%;
+    margin: auto;
+    padding-top: 8%;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.buttons {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+    margin-top: 30px;
+}
+
+.tab-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    width: 120px;
+    height: 120px;
+    background-color: #e0e0e0;
+    border: none;
+    border-radius: 10px;
+    margin: 10px;
+    font-size: 15px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.tab-btn.active {
+    background: #ac9ee7;
+    color: white;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.tab-content h3 {
+    font-size: 30px;
+    padding-top: 4%;
+}
+
+.tab-content p {
+    font-size: 20px;
+    padding-bottom: 10%;
+}
+
+.btn-icon {
+    width: 50px;  
+    height: 50px;
+    margin-right: 5px; 
+    vertical-align: middle;
+}
+
+@keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+}
+
+.da-box {
+    background-color: #656ec1; 
+    color: white;
+    padding: 40px 20px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+
+.display-3 fw-bold mb-4 {
+    color: white;
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.hero-section {
+    background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('../assets/warehouse-bg.jpg');
+    background-size: cover;
+    background-position: center;
+    color: white;
+    padding: 100px 0;
+    text-align: center;
+}
+
+.hero-section h1 {
+    font-size: 5rem; 
+    font-weight: bold;
+}
+
+.hero-section .lead {
+    font-size: 2rem;
+}
+
+.mission-card, .team-card {
+    transition: transform 0.3s ease;
+    height: 100%;
+}
+
+.mission-card:hover, .team-card:hover {
+    transform: translateY(-10px);
+}
+
+.team-img {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 5px solid #5d78c8;
+    margin-bottom: 20px;
+}
+
+.stats-section {
+    background-color: #f8f9fa;
+    padding: 60px 0;
+}
+
+.stat-number {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #5d78c8;
+}
+
+.contact-section {
+    background-color: #f8f9fa;
+}
+
+.contact-section h2 {
+    font-size: 2.5rem;
+    font-weight: bold;
+}
+
+.contact-section .form-control {
+    border-radius: 0.5rem;
+}
+
+.contact-section .btn {
+    border-radius: 0.5rem;
+}
