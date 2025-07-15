@@ -1,0 +1,186 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REKTA Cycling Accessories | Adidas Inspired</title>
+    <link rel="stylesheet" href="nonlandingcss.css">
+</head>
+<body>
+
+    <header>
+        <div class="container nav-container" style="display: flex; align-items: center; justify-content: space-between; position: relative;">
+          
+          <!-- Logo (left) -->
+          <div class="logo" style="font-family: Milker; flex: 0 0 auto;">
+            <a href="landingpage.html">rekta</a>
+          </div>
+      
+          <!-- Categories (centered using absolute positioning) -->
+          <nav style="position: absolute; left: 50%; transform: translateX(-50%);">
+            <ul style="display: flex; gap: 1.5rem; list-style: none;">
+              <li><a href="clothing.html">Clothing</a></li>
+              <li><a href="cycling.html">Cycling</a></li>
+              <li><a href="accessories.html">Accessories</a></li>
+            </ul>
+          </nav>
+      
+          <!-- Search bar, cart, and user icons (right) -->
+          <div style="display: flex; align-items: center; gap: 1rem;">
+            <form action="#" method="GET" style="display: flex; align-items: center;">
+              <input type="text" name="q" placeholder="Search products..." style="padding: 0.4rem 0.75rem; border: none; border-radius: 4px 0 0 4px;">
+              <button type="submit" style="padding: 0.4rem 0.75rem; background: white; border: none; border-radius: 0 4px 4px 0; font-weight: bold; cursor: pointer;">
+                🔍
+              </button>
+            </form>
+            <a href="cart.html">
+              <img src="cart-73-16.png" alt="Cart" style="cursor: pointer;">
+            </a>
+            <a href="login.html">
+              <img src="user.png" alt="User" style="cursor: pointer;">
+            </a>
+          </div>
+          
+        </div>
+      </header>
+      
+
+<section class="hero">
+    <div class="hero-content">
+        <h1>Cycling Accessories</h1>
+        <p>Premium gear for every ride. Discover our collection of high-performance cycling accessories designed for comfort and style.</p>
+        <a href="#products" class="btn">Shop Now</a>
+    </div>
+</section>
+
+<div class="container">
+    <div class="main-content">
+        <aside class="sidebar">
+            <h2>Filter Products</h2>
+            <form method="POST" action="">
+                <label for="category-select">Category</label>
+                <select id="category-select" name="category">
+                   
+                </select>
+
+                <label for="price-select">Price Range</label>
+                <select id="price-select" name="price">
+                  
+                </select>
+
+                <label for="color-select">Color</label>
+                <select id="color-select" name="color">
+      
+                </select>
+
+                <label for="brand-select">Brand</label>
+                <select id="brand-select" name="brand">
+                
+                </select>
+
+                <button type="submit" class="filter-btn">Apply Filters</button>
+            </form>
+        </aside>
+
+        <section class="products-container" id="products">
+            <div class="products-header">
+                <h2>All Accessories</h2>
+                <select class="sort-select">
+                    <option>Sort by: Featured</option>
+                    <option>Price: Low to High</option>
+                    <option>Price: High to Low</option>
+                    <option>Newest First</option>
+                    <option>Best Selling</option>
+                </select>
+            </div>
+
+            <div class="products">
+               
+            </div>
+        </section>
+    </div>
+</div>
+
+<footer>
+    <div class="container" style="display: flex; flex-wrap: wrap; justify-content: space-between; padding: 2rem 0;">
+      
+        <!-- Column 1: Shop -->
+        <div style="flex: 1 1 200px; margin-bottom: 1rem;">
+          <h3>Shop</h3>
+          <ul style="list-style: none; padding: 0;">
+            <li><a href="mens.html" style="color: #fff;">Men</a></li>
+            <li><a href="womens.html" style="color: #fff;">Women</a></li>
+            <li><a href="#" style="color: #fff;">Accessories</a></li>
+          </ul>
+        </div>
+    
+        <!-- Column 2: Support -->
+        <div style="flex: 1 1 200px; margin-bottom: 1rem;">
+          <h3>Support</h3>
+          <ul style="list-style: none; padding: 0;">
+            <li><a href="#" style="color: #fff;">Help</a></li>
+            <li><a href="#" style="color: #fff;">Returns</a></li>
+            <li><a href="#" style="color: #fff;">Order Tracker</a></li>
+          </ul>
+        </div>
+    
+        <!-- Column 3: Company Info -->
+        <div style="flex: 1 1 200px; margin-bottom: 1rem;">
+          <h3>Company</h3>
+          <ul style="list-style: none; padding: 0;">
+            <li><a href="#" style="color: #fff;">About Us</a></li>
+            <li><a href="#" style="color: #fff;">Careers</a></li>
+            <li><a href="#" style="color: #fff;">Sustainability</a></li>
+          </ul>
+        </div>
+    
+        <!-- Column 4: Newsletter -->
+        <div style="flex: 1 1 300px; margin-bottom: 1rem;">
+          <h3>Sign up for updates</h3>
+          <form>
+            <input type="email" placeholder="Your email" style="padding: 0.5rem; width: 80%; margin-bottom: 0.5rem;">
+            <br>
+            <button type="submit" class="btn" style="background: #fff; color: #000;">Subscribe</button>
+          </form>
+        </div>
+  
+        <!-- Column 5: Social Media -->
+        <div style="flex: 1 1 200px; margin-bottom: 1rem;">
+          <h3>Follow Us</h3>
+          <div style="display: flex; gap: 1rem; align-items: center; margin-inline: auto;">
+            <a href="https://www.facebook.com/rektacycling"><img src="facebook.webp" alt="Facebook" style="width: 32px; height: 32px;"></a>
+            <a href="https://www.instagram.com/rektacycling/"><img src="instagram.webp" alt="Instagram" style="width: 32px; height: 32px;"></a>
+          </div>
+        </div>
+  
+    
+      <!-- Bottom Bar -->
+      <div style="background-color: #111; text-align: center; padding: 1rem 0; width: 100%;">
+        <p style="margin: 0;">&copy; 2025 Rekta Cycling. All rights reserved. |
+          <a href="#" style="color: #fff;">Privacy</a> |
+          <a href="#" style="color: #fff;">Terms</a>
+        </p>
+      </div>
+</footer>
+
+<script>
+function addToCart(productId) {
+    // Add to cart functionality
+    alert('Product added to cart!');
+    // You can implement AJAX call here to add to cart
+}
+
+// Quick view functionality
+document.querySelectorAll('.quick-view').forEach(button => {
+    button.addEventListener('click', function(e) {
+        e.stopPropagation();
+        // Implement quick view modal
+        alert('Quick view feature coming soon!');
+    });
+});
+</script>
+
+</body>
+</html>

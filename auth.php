@@ -1,11 +1,13 @@
 <?php
-session_start();
+// require_once "config.php";
+// header('Content-Type: application/json');
 
-// Database configuration
-$host = 'admin.dcism.org';
-$user = 's11820346';
+session_start();
+$host = 'c1-link.com';
+$user = 'c1link_aishen';
 $pass = 'SEULRENE_kangseulgi';
-$db = 's11820346_im2';
+$db = 'c1link_usc_db';
+
 
 // Handle AJAX requests
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
@@ -254,16 +256,16 @@ function handleSignup($mysqli, $data) {
                 $stmt->bind_param("ss", $param_username, $param_password);
                 
                 if ($stmt->execute()) {
-                    $user_id = $stmt->insert_id;
+                    $id = $stmt->insert_id;
                     
                     // Create customer record
                     $sql_customer = "INSERT INTO customer 
-                                     (customer_name, contact_number, address, user_id, date_registered) 
+                                     (customer_name, contact_number, address, id, date_registered) 
                                      VALUES (?, ?, ?, ?, NOW())";
                     
                     if ($stmt_customer = $mysqli->prepare($sql_customer)) {
                         $contact_number = (int)$data["contact"];
-                        $stmt_customer->bind_param("sisi", $param_username, $contact_number, $data["address"], $user_id);
+                        $stmt_customer->bind_param("sisi", $param_username, $contact_number, $data["address"], $id);
                         
                         if ($stmt_customer->execute()) {
                             $mysqli->commit();

@@ -1,0 +1,68 @@
+.login-container {
+    max-width: 400px;
+    margin: 5rem auto;
+    background: #fff;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  }
+  
+  .login-container h2 {
+    text-align: center;
+    margin-bottom: 2rem;
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+  
+  .login-container form {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .login-container input {
+    padding: 0.75rem;
+    margin-bottom: 1.5rem;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+  }
+  
+  .login-container input:focus {
+    border-color: #f15a24;
+    outline: none;
+  }
+  
+  .login-container button {
+    padding: 0.75rem;
+    background: #000;
+    color: white;
+    font-weight: bold;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: background 0.3s, transform 0.3s;
+  }
+  
+  .login-container button:hover {
+    background: #f15a24;
+    transform: translateY(-2px);
+  }
+  
+  .login-container .signup-link {
+    margin-top: 1rem;
+    text-align: center;
+    font-size: 0.95rem;
+  }
+  
+  .login-container .signup-link a {
+    color: #f15a24;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  
+  .login-container .signup-link a:hover {
+    text-decoration: underline;
+  }
+  
