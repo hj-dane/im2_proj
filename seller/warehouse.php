@@ -1,28 +1,25 @@
+<!-- User Role Label -->
+<span class="text-muted small role" style="color: black;font-weight: 500;font-size: 18px;">Admin/Seller</span>
 <?php
 session_start();
 
 // Database configuration
-$host = 'admin.dcism.org';
-$username = 's11820346';
-$password = 'SEULRENE_kangseulgi';
-$dbname = 's11820346_im2';
+$host = 'localhost';
+$user = 'root';
+$pass = '';
+$db = 'school_db';
 
 // Create connection
-$conn = new mysqli($host, $username, $password, $dbname);
+$mysqli = new mysqli("localhost", "root", "", "school_db");
 
 // Check connection
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
-
-if (!isset($_SESSION['user_id'])) {
-    header("Location: sign.php");
-    exit();
+if ($mysqli->connect_error) {
+    die("Connection failed: " . $mysqli->connect_error);
 }
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    header('Content-Type: application/json');
+    // Remove JSON header for redirect
     
     // Get form data
     $productName = $_POST['product_name'] ?? '';
@@ -59,23 +56,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     try {
         // Insert into database
-        $stmt = $conn->prepare("
+        $stmt = $mysqli ->prepare("
             INSERT INTO product_inventory 
             (product_name, product_description, unit_price, category_id, quantity, color, size, is_active) 
             VALUES (?, ?, ?, ?, ?, ?, ?, 1)
         ");
         $stmt->bind_param('ssdisss', $productName, $description, $price, $categoryId, $quantity, $color, $size);
         $stmt->execute();
-        
         if ($stmt->affected_rows > 0) {
-            echo json_encode(['success' => true, 'message' => 'Product added successfully']);
+            // Redirect to inventorylist.php with success message
+            header('Location: inventorylist.php?added=1');
+            exit;
         } else {
-            echo json_encode(['success' => false, 'message' => 'Failed to add product']);
+            // Redirect with error
+            header('Location: inventorylist.php?added=0');
+            exit;
         }
     } catch (Exception $e) {
-        echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
+        header('Location: inventorylist.php?added=0');
+        exit;
     }
-    exit;
 }
 ?>
 <!DOCTYPE html>
@@ -97,7 +97,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="d-flex align-items-center">
                         
                         <div class="logo" style="font-family: Milker; flex: 0 0 auto;">
-                            <a href="landingpage.html">rekta</a>
+                            <a href="landingpage.html" class="navbar-brand" style="font-family: Milker; font-size: 2.2rem; color: white; text-decoration: none; font-weight: 700; letter-spacing: 2px;">
+                                rekta
+                            </a>
                         </div>
                         
                         <ul class="nav nav-tabs border-0" style="margin-top: 6px;">
@@ -148,7 +150,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <li class="px-3 pt-3 pb-2">
                                     <div class="d-flex flex-column">
                                         <span class="fw-bold name" style="color: black;font-size: 20px;"></span>  
-                                        <span class="text-muted small role" style="color: black;font-weight: 500;font-size: 18px;">Standard User</span>  
+                                        <span class="text-muted small role" style="color: black;font-weight: 500;font-size: 18px;">Admin/Seller</span>   
                                     </div>
                                 </li>
                                 <li><hr class="dropdown-divider m-0"></li>
@@ -173,82 +175,71 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <h1 class="row" style="padding-left: 58px;padding-top: 25px;padding-bottom: 28px;"><b>ADD PRODUCT</b></h1>
             <hr>
             <div class="container mt-5">
-                <div id="alert-container"></div>
-                <div class="prodcontainer">
-                    
-                    <!-- First Column -->
-                    <div class="column">
-                        <div class="form-group">
-                            <label for="product-id">Product ID (Auto-generated)</label>
-                            <input type="text" id="product-id" placeholder="Will be auto-generated" disabled>
-                        </div>
-                        <div class="form-group">
-                            <label for="product-name">Product Name *</label>
-                            <input type="text" id="product-name" placeholder="Input Name" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="product-description">Product Description</label>
-                            <textarea id="product-description" rows="4" placeholder="Input Description"></textarea>
-                        </div>
-                    </div>
-                    
-                    <!-- Second Column -->
-                    <div class="column">
-                        <div class="form-group">
-                            <label for="price">Price *</label>
-                            <input type="number" id="price" placeholder="500" min="0" step="0.01" required> 
-                        </div>
-                        <div class="form-group">
-                            <label for="category">Category *</label>
-                            <div class="dropdown">
-                                <button class="btn btn-secondary dropdown-toggle" type="button" id="categoryDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                    Select Category
-                                </button>
-                                <ul class="dropdown-menu" aria-labelledby="categoryDropdown">
-                                    <li><button class="dropdown-item" type="button">Clothing</button></li>
-                                    <li><button class="dropdown-item" type="button">Accessories</button></li>
-                                </ul>
+                <form method="post" enctype="multipart/form-data">
+                    <div class="prodcontainer">
+                        <!-- First Column -->
+                        <div class="column">
+                            <div class="form-group">
+                                <label for="product-id">Product ID (Auto-generated)</label>
+                                <input type="text" id="product-id" placeholder="Will be auto-generated" disabled>
+                            </div>
+                            <div class="form-group">
+                                <label for="product-name">Product Name *</label>
+                                <input type="text" id="product-name" name="product_name" placeholder="Input Name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="product-description">Product Description</label>
+                                <textarea id="product-description" name="product_description" rows="4" placeholder="Input Description"></textarea>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label for="quantity">Quantity *</label>
-                            <input type="number" id="quantity" placeholder="20" min="0" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="color">Color</label>
-                            <input type="text" id="color" placeholder="Red/Yellow/Blue/Black">
-                        </div>
-                    </div>
-                    
-                    <!-- Third Column (Rightmost) -->
-                    <div class="column">
-                        <div class="form-group">
-                            <label for="size">Size</label>
-                            <div class="dropdown">
-                                <button class="btn btn-secondary dropdown-toggle" type="button" id="sizeDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                    Select Size
-                                </button>
-                                <ul class="dropdown-menu" aria-labelledby="sizeDropdown">
-                                    <li><button class="dropdown-item" type="button">Small</button></li>
-                                    <li><button class="dropdown-item" type="button">Medium</button></li>
-                                    <li><button class="dropdown-item" type="button">Large</button></li>
-                                    <li><button class="dropdown-item" type="button">N/A</button></li>
-                                </ul>
+                        <!-- Second Column -->
+                        <div class="column">
+                            <div class="form-group">
+                                <label for="price">Price *</label>
+                                <input type="number" id="price" name="price" placeholder="500" min="0" step="0.01" required> 
+                            </div>
+                            <div class="form-group">
+                                <label for="category">Category *</label>
+                                <select id="category" name="category" class="form-select" required>
+                                    <option value="">Select Category</option>
+                                    <option value="Clothing">Clothing</option>
+                                    <option value="Accessories">Accessories</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="quantity">Quantity *</label>
+                                <input type="number" id="quantity" name="quantity" placeholder="20" min="0" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="color">Color</label>
+                                <input type="text" id="color" name="color" placeholder="Red/Yellow/Blue/Black">
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label>Product Images</label>
-                            <div class="image-upload" id="imageUpload">Upload Image</div>
-                            <input type="file" id="product-image" style="display: none;" accept="image/*">
+                        <!-- Third Column (Rightmost) -->
+                        <div class="column">
+                            <div class="form-group">
+                                <label for="size">Size</label>
+                                <select id="size" name="size" class="form-select">
+                                    <option value="">Select Size</option>
+                                    <option value="Small">Small</option>
+                                    <option value="Medium">Medium</option>
+                                    <option value="Large">Large</option>
+                                    <option value="N/A">N/A</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Product Images</label>
+                                <div class="image-upload" id="imageUpload">Upload Image</div>
+                                <input type="file" id="product-image" name="product_image" style="display: none;" accept="image/*">
+                            </div>
+                            <button class="submit-btn" type="submit">Add Product</button>
                         </div>
-                        <button class="submit-btn" id="submit-product">Add Product</button>
                     </div>
-                </div>
+                </form>
             </div>
         </main>
 
-        <script src="../js/addprod.js"></script>
-        <script src="../js/inventorydata.js"></script>
+        <!-- <script src="../js/addprod.js"></script> -->
         <script src="../js/new_sign_in.js"></script>
 
     </body>

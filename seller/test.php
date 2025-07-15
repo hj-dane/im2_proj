@@ -1,3 +1,5 @@
+<!-- User Role Label -->
+<span class="text-muted small role" style="color: black;font-weight: 500;font-size: 18px;">Admin/Seller</span>
 <?php
 error_reporting(E_ALL);
 ini_set('display_errors', 1);

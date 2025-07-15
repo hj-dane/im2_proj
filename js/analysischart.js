@@ -65,15 +65,15 @@ function createCategoryChart() {
         const categories = Object.keys(categoryData);
         const quantities = Object.values(categoryData);
 
-        // Color scheme for categories
+        // Color scheme for categories (high contrast to gray backgrounds)
         const categoryColors = {
-            'Clothing': '#796984',
-            'Accessories': '#5A4D6B'
+            'Clothing': '#f13f3fff',      // Vibrant Red
+            'Accessories': '#00c0b3ff'    // Bright Teal
         };
 
         // Get colors for each category
         const backgroundColors = categories.map(cat => 
-            categoryColors[cat] || `hsl(${Math.random() * 360}, 70%, 60%)`
+            categoryColors[cat] || `hsl(${Math.floor(Math.random() * 360)}, 90%, 55%)`
         );
 
         // Get chart canvas
@@ -94,24 +94,33 @@ function createCategoryChart() {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                backgroundColor: '#f8f9fa', // Light gray background for the chart area
                 plugins: {
                     legend: {
                         position: 'bottom',
                         labels: {
-                            boxWidth: 12,
-                            padding: 20
+                            boxWidth: 22,
+                            padding: 28,
+                            font: {
+                                size: 24,
+                                weight: 'bold',
+                                family: 'Arial, sans-serif',
+                            },
+                            color: '#222',
                         }
                     },
                     title: { 
                         display: true, 
                         text: 'Inventory by Category', 
                         font: { 
-                            size: 16,
-                            weight: 'bold'
+                            size: 30,
+                            weight: 'bold',
+                            family: 'Arial, sans-serif',
                         },
+                        color: '#111',
                         padding: {
-                            top: 10,
-                            bottom: 20
+                            top: 20,
+                            bottom: 32
                         }
                     },
                     tooltip: {
@@ -121,6 +130,16 @@ function createCategoryChart() {
                                 const percentage = Math.round(context.raw / total * 100);
                                 return `${context.label}: ${context.raw} items (${percentage}%)`;
                             }
+                        },
+                        bodyFont: {
+                            size: 22,
+                            weight: 'bold',
+                            family: 'Arial, sans-serif',
+                        },
+                        titleFont: {
+                            size: 22,
+                            weight: 'bold',
+                            family: 'Arial, sans-serif',
                         }
                     }
                 }

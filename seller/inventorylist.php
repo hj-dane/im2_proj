@@ -1,38 +1,49 @@
+<!-- User Role Label -->
+<span class="text-muted small role" style="color: black;font-weight: 500;font-size: 18px;">Admin/Seller</span>
 <?php
 session_start();
+// Enable error reporting for debugging
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
 // Database configuration
-$host = 'admin.dcism.org';
-$username = 's11820346';
-$password = 'SEULRENE_kangseulgi';
-$dbname = 's11820346_im2';
+$host = 'localhost';
+$user = 'root';
+$pass = '';
+$db = 'school_db';
 
 // Create connection
-$conn = new mysqli($host, $username, $password, $dbname);
+$mysqli = new mysqli($host, $user, $pass, $db);
 
-// Check connection
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
-
-if (!isset($_SESSION['user_id'])) {
-    header("Location: sign.php");
-    exit();
+if ($mysqli->connect_error) {
+    die("Connection failed: " . $mysqli->connect_error);
 }
 
 // Fetch all active products from database
 $products = [];
 $sql = "SELECT pi.*, c.category_name 
-        FROM product_inventory pi
-        LEFT JOIN category c ON pi.category_id = c.id
+        FROM product_inventory pi        
+        LEFT JOIN category c ON pi.category_id = c.id        
         WHERE pi.is_active = 1";
-$result = $conn->query($sql);
+$result = $mysqli->query($sql);
+
+// Debug: Check for query errors
+if ($result === false) {
+    die('<div style="background: #f8d7da; color: #721c24; padding: 10px; margin: 10px 0; border: 1px solid #f5c6cb;">Query error: ' . $mysqli->error . '</div>');
+}
 
 if ($result->num_rows > 0) {
     while($row = $result->fetch_assoc()) {
+        // Normalize keys to lower-case for consistency
+        $row = array_change_key_case($row, CASE_LOWER);
         $products[] = $row;
     }
 }
+// Debug: Print products array to check data
+if (empty($products)) {
+    echo '<div style="background: #f8d7da; color: #721c24; padding: 10px; margin: 10px 0; border: 1px solid #f5c6cb;">No products found in <b>product_inventory</b> with is_active = 1.</div>';
+} 
 
 // Handle filtering
 $filter = $_GET['filter'] ?? 'all';
@@ -40,14 +51,12 @@ $search = $_GET['search'] ?? '';
 
 // Apply filters
 $filteredProducts = array_filter($products, function($product) use ($filter, $search) {
-    $matchesFilter = $filter === 'All' || 
-                    ($filter === 'Clothing' && $product['category_name'] === 'Clothing') ||
-                    ($filter === 'Accessories' && $product['category_name'] === 'Accessories');
-    
+    $matchesFilter = $filter === 'all' || 
+        ($filter === 'Clothing' && isset($product['category_name']) && strcasecmp($product['category_name'], 'Clothing') === 0) ||
+        ($filter === 'Accessories' && isset($product['category_name']) && strcasecmp($product['category_name'], 'Accessories') === 0);
     $matchesSearch = empty($search) || 
-                    stripos($product['product_name'], $search) !== false || 
-                    stripos($product['product_description'], $search) !== false;
-    
+        (isset($product['product_name']) && stripos($product['product_name'], $search) !== false) || 
+        (isset($product['product_description']) && stripos($product['product_description'], $search) !== false);
     return $matchesFilter && $matchesSearch;
 });
 
@@ -58,9 +67,9 @@ $totalPages = ceil(count($filteredProducts) / $itemsPerPage);
 $offset = ($currentPage - 1) * $itemsPerPage;
 $paginatedProducts = array_slice($filteredProducts, $offset, $itemsPerPage);
 
-// Count low stock items (quantity < 10)
+// Count low stock items (quantity < 20)
 $lowStockCount = count(array_filter($products, function($product) {
-    return $product['quantity'] < 10;
+    return $product['quantity'] < 20;
 }));
 ?>
 
@@ -68,13 +77,12 @@ $lowStockCount = count(array_filter($products, function($product) {
 <html>
     <head>
         <meta charset="utf-8">
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
         <link rel="stylesheet" href="../styles/inventory.css">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
         <title>REKTA | Product Inventory</title>
         <link rel="icon" type="image/x-icon" href="../assets/logo_stockflow.png">
-        
     </head>
     <body>
         <div class="page-wrapper">
@@ -84,7 +92,9 @@ $lowStockCount = count(array_filter($products, function($product) {
                         <div class="d-flex align-items-center">
                             
                             <div class="logo" style="font-family: Milker; flex: 0 0 auto;">
-                                <a href="landingpage.html">rekta</a>
+                                <a href="landingpage.html" class="navbar-brand" style="font-family: Milker; font-size: 2.2rem; color: white; text-decoration: none; font-weight: 700; letter-spacing: 2px;">
+                                    rekta
+                                </a>
                             </div>
                             
                             <ul class="nav nav-tabs border-0" style="margin-top: 6px;">
@@ -135,7 +145,7 @@ $lowStockCount = count(array_filter($products, function($product) {
                                     <li class="px-3 pt-3 pb-2">
                                         <div class="d-flex flex-column">
                                             <span class="fw-bold name" style="color: black;font-size: 20px;"></span>  
-                                            <span class="text-muted small role" style="color: black;font-weight: 500;font-size: 18px;">Standard User</span>  
+                                            <span class="text-muted small role" style="color: black;font-weight: 500;font-size: 18px;">Admin/Seller</span>  
                                         </div>
                                     </li>
                                     <li><hr class="dropdown-divider m-0"></li>
@@ -159,18 +169,17 @@ $lowStockCount = count(array_filter($products, function($product) {
                 <div class="container2-fluid px-4 py-3">
                     <div class="row g-4">
                         <div class="col-lg-8 p-4">
-                            <form method="get" action="inventorylist.php" class="d-flex justify-content-between mb-3">
+                            <form method="get" action="inventorylist.php" class="d-flex justify-content-between mb-3" id="filterForm">
                                 <select name="filter" id="filterDropdown" class="form-select" style="width: 200px;">
-                                    <option value="all" <?php echo $filter === 'all' ? 'selected' : ''; ?>All</option>
-                                    <option value="Clothing" <?php echo $filter === 'Clothing' ? 'selected' : ''; ?>Clothing</option>
-                                    <option value="Accessories" <?php echo $filter === 'Accessories' ? 'selected' : ''; ?>Accessories</option>
+                                    <option value="all" <?php echo $filter === 'all' ? 'selected' : ''; ?>>All</option>
+                                    <option value="Clothing" <?php echo $filter === 'Clothing' ? 'selected' : ''; ?>>Clothing</option>
+                                    <option value="Accessories" <?php echo $filter === 'Accessories' ? 'selected' : ''; ?>>Accessories</option>
                                 </select>
                                 <div class="input-group" style="width: 250px;">
-                                    <input type="text" name="search" id="searchBox" class="form-control" placeholder="Search...">
+                                    <input type="text" name="search" id="searchBox" class="form-control" placeholder="Search..." value="<?php echo htmlspecialchars($search); ?>">
                                     <button type="submit" class="btn btn-primary">Search</button>
                                 </div>
                             </form>
-                
                             <table class="table table-bordered" id="dataTable">
                                 <thead>
                                     <tr>
@@ -203,26 +212,22 @@ $lowStockCount = count(array_filter($products, function($product) {
                                     <?php endforeach; ?>
                                 </tbody>
                             </table>
-                            
                             <nav aria-label="Page navigation">
                                 <ul class="pagination">
                                     <li class="page-item <?php echo $currentPage <= 1 ? 'disabled' : ''; ?>">
                                         <a class="page-link" href="?page=<?php echo $currentPage - 1; ?>&filter=<?php echo $filter; ?>&search=<?php echo urlencode($search); ?>">Prev</a>
                                     </li>
-                                    
                                     <?php for ($i = 1; $i <= $totalPages; $i++): ?>
                                         <li class="page-item <?php echo $i === $currentPage ? 'active' : ''; ?>">
                                             <a class="page-link" href="?page=<?php echo $i; ?>&filter=<?php echo $filter; ?>&search=<?php echo urlencode($search); ?>"><?php echo $i; ?></a>
                                         </li>
                                     <?php endfor; ?>
-                                    
                                     <li class="page-item <?php echo $currentPage >= $totalPages ? 'disabled' : ''; ?>">
                                         <a class="page-link" href="?page=<?php echo $currentPage + 1; ?>&filter=<?php echo $filter; ?>&search=<?php echo urlencode($search); ?>">Next</a>
                                     </li>
                                 </ul>
                             </nav>
                         </div>
-                
                         <div class="col-lg-4 summary-section" style="padding-top: 1%;">
                             <div class="card inventory-summary-card">
                                 <div class="card-header inventory-summary-header">
@@ -234,7 +239,7 @@ $lowStockCount = count(array_filter($products, function($product) {
                                     <div id="lowStockList" class="low-stock-list-container">
                                         <?php 
                                         $lowStockItems = array_filter($products, function($product) {
-                                            return $product['quantity'] < 10;
+                                            return $product['quantity'] < 20;
                                         });
                                         
                                         if (empty($lowStockItems)): ?>
@@ -259,8 +264,13 @@ $lowStockCount = count(array_filter($products, function($product) {
                 </div>
             </main>
         </div>
-        <script src="../js/inventorydata.js"></script>
         <script src="../js/new_sign_in.js"></script>
-
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('filterDropdown').addEventListener('change', function() {
+                document.getElementById('filterForm').submit();
+            });
+        });
+        </script>
     </body>
 </html>

@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 page: 1 // Always reset to first page on filter/search
             });
 
-            const response = await fetch(`api/get_inventory.php?${params}`);
+            const response = await fetch(`api/inventorylist.php?${params}`);
             const data = await response.json();
 
             if (data.success) {

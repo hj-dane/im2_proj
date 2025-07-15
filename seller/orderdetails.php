@@ -1,67 +1,74 @@
+<!-- User Role Label -->
+<span class="text-muted small role" style="color: black;font-weight: 500;font-size: 18px;">Admin/Seller</span>
 <?php
 // Database connection
-$host = 'admin.dcism.org';
-$user = 's11820346';
-$pass = 'SEULRENE_kangseulgi';
-$db = 's11820346_im2';
+$host = 'localhost';
+$user = 'root';
+$pass = '';
+$db = 'school_db';
 
-try {
-    $conn = new PDO("mysql:host=$host;dbname=$db", $user, $pass);
-    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    
-    // Get order ID from URL or use a default
-    $orderId = isset($_GET['order_id']) ? $_GET['order_id'] : 'SO-00004';
-    
-    // Handle form submission
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
-        $action = $_POST['action'];
-        $orderId = $_POST['order_id'];
-        
-        if ($action === 'confirm') {
-            $stmt = $conn->prepare("UPDATE trans_header SET status = 'Preparing' WHERE id = :order_id");
-            $stmt->bindParam(':order_id', $orderId);
-            $stmt->execute();
-            
-            header("Location: orderlogs.php");
-            exit();
-        } elseif ($action === 'cancel') {
-            $stmt = $conn->prepare("UPDATE trans_header SET status = 'Cancelled' WHERE id = :order_id");
-            $stmt->bindParam(':order_id', $orderId);
-            $stmt->execute();
-            
-            header("Location: orderlogs.php");
-            exit();
+$mysqli = new mysqli($host, $user, $pass, $db);
+if ($mysqli->connect_error) {
+    die("Connection failed: " . $mysqli->connect_error);
+}
+
+// Get order ID from URL or use a default (should be integer)
+$orderId = isset($_GET['order_id']) ? intval($_GET['order_id']) : 1;
+
+// Handle form submission
+$order_message = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
+    $action = $_POST['action'];
+    $orderId = intval($_POST['order_id']);
+    if ($action === 'confirm') {
+        $stmt = $mysqli->prepare("UPDATE trans_header SET status = 'Preparing' WHERE id = ?");
+        $stmt->bind_param('i', $orderId);
+        if ($stmt->execute()) {
+            $order_message = '<div class="alert alert-success">Order confirmed and set to Preparing.</div>';
+        } else {
+            $order_message = '<div class="alert alert-danger">Error confirming order: ' . htmlspecialchars($stmt->error) . '</div>';
+        }
+    } elseif ($action === 'cancel') {
+        $stmt = $mysqli->prepare("UPDATE trans_header SET status = 'Cancelled' WHERE id = ?");
+        $stmt->bind_param('i', $orderId);
+        if ($stmt->execute()) {
+            $order_message = '<div class="alert alert-warning">Order cancelled.</div>';
+        } else {
+            $order_message = '<div class="alert alert-danger">Error cancelling order: ' . htmlspecialchars($stmt->error) . '</div>';
         }
     }
-    
-    // Fetch order header info
-    $stmt = $conn->prepare("SELECT id as order_id, trans_date as order_date, status FROM trans_header WHERE id = :order_id");
-    $stmt->bindParam(':order_id', $orderId);
-    $stmt->execute();
-    $orderHeader = $stmt->fetch(PDO::FETCH_ASSOC);
-    
-    // Fetch order items
-    $stmt = $conn->prepare("
-        SELECT pi.product_name, td.price, pi.weight, pi.stock, pi.sku, td.qty_out as quantity
-        FROM trans_details td
-        JOIN product_inventory pi ON td.product_id = pi.id
-        WHERE td.trans_header_id = :order_id
-    ");
-    $stmt->bindParam(':order_id', $orderId);
-    $stmt->execute();
-    $orderItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
-    // Calculate order total
-    $orderTotal = 0;
-    foreach ($orderItems as $item) {
-        $orderTotal += $item['price'] * $item['quantity'];
-    }
-    
-} catch(PDOException $e) {
-    echo "Connection failed: " . $e->getMessage();
+}
+
+// Fetch order header info
+$orderHeader = [];
+$stmt = $mysqli->prepare("SELECT id as order_id, trans_date as order_date FROM trans_header WHERE id = ?");
+$stmt->bind_param('i', $orderId);
+$stmt->execute();
+$result = $stmt->get_result();
+$orderHeader = $result->fetch_assoc();
+
+// Fetch order items
+$orderItems = [];
+$stmt = $mysqli->prepare("
+    SELECT td.id, td.product_id, td.qty_out as quantity, td.price, td.amount,
+           pi.product_name, pi.quantity
+    FROM trans_details td
+    LEFT JOIN product_inventory pi ON td.product_id = pi.id
+    WHERE td.trans_header_id = ?
+");
+$stmt->bind_param('i', $orderId);
+$stmt->execute();
+$result = $stmt->get_result();
+while ($row = $result->fetch_assoc()) {
+    $orderItems[] = $row;
+}
+
+// Calculate order total
+$orderTotal = 0;
+foreach ($orderItems as $item) {
+    $orderTotal += $item['price'] * $item['quantity'];
 }
 ?>
-
 <!DOCTYPE html>
 <html>
     <head>
@@ -79,7 +86,9 @@ try {
                 <div class="d-flex align-items-center justify-content-between w-100">
                     <div class="d-flex align-items-center">
                         <div class="logo" style="font-family: Milker; flex: 0 0 auto;">
-                            <a href="landingpage.html">rekta</a>
+                            <a href="landingpage.html" class="navbar-brand" style="font-family: Milker; font-size: 2.2rem; color: white; text-decoration: none; font-weight: 700; letter-spacing: 2px;">
+                                rekta
+                            </a>
                         </div>
                         <ul class="nav nav-tabs border-0" style="margin-top: 6px;">
                             <li class="nav-item">
@@ -129,7 +138,7 @@ try {
                                 <li class="px-3 pt-3 pb-2">
                                     <div class="d-flex flex-column">
                                         <span class="fw-bold name" style="color: black;font-size: 20px;"></span>  
-                                        <span class="text-muted small role" style="color: black;font-weight: 500;font-size: 18px;">Standard User</span>  
+                                        <span class="text-muted small role" style="color: black;font-weight: 500;font-size: 18px;">Admin/Seller</span>   
                                     </div>
                                 </li>
                                 <li><hr class="dropdown-divider m-0"></li>
@@ -152,22 +161,28 @@ try {
 
         <main class="main-content">
             <div class="container-orderdescc">
-                <h1 class="order-title"><b>ORDER DETAILS</b></h1>
+                <h1 class="order-title">ORDER DETAILS</h1>
+        <?php if (empty($orderItems)): ?>
+        <div style="background: #f8d7da; color: #721c24; padding: 10px; margin-bottom: 15px; border: 1px solid #f5c6cb; border-radius: 4px;">
+            <strong>No order details found for this order.</strong>
+        </div>
+        <?php endif; ?>
                 <hr>
+                <?php if (!empty($order_message)) echo $order_message; ?>
+                <!-- No debug info -->
                 <div class="order-container">
                     <div class="order-header">
-                        <div class="order-id">Order ID: <?php echo htmlspecialchars($orderHeader['order_id'] ?? 'SO-00004'); ?></div>
+                        <div class="order-id">Order ID: <?php echo htmlspecialchars($orderHeader['order_id'] ?? $orderId); ?></div>
                         <div class="order-date"> Date:
                             <?php 
                             if (isset($orderHeader['order_date'])) {
                                 echo date('m/d/Y h:i A', strtotime($orderHeader['order_date']));
                             } else {
-                                echo '06/13/2022 06:24 AM'; // Default if no date in DB
+                                echo 'N/A'; // Default if no date in DB
                             }
                             ?>
                         </div>
                     </div>
-                    
                     <table class="product-table">
                         <thead>
                             <tr>
@@ -183,54 +198,38 @@ try {
                                     <div class="product-name"><?php echo htmlspecialchars($item['product_name']); ?></div>
                                     <div class="product-price">₱<?php echo number_format($item['price'], 2); ?></div>
                                     <div class="product-details">
-                                        <span>weight: <?php echo htmlspecialchars($item['weight']); ?></span>
-                                        <span>Available Stock: <?php echo htmlspecialchars($item['stock']); ?></span>
-                                        <span>SKU: <?php echo htmlspecialchars($item['sku']); ?></span>
+                                        <span>Available Quantity: <?php echo isset($item['quantity']) ? htmlspecialchars($item['quantity']) : 'N/A'; ?></span>
                                     </div>
                                 </td>
                                 <td><?php echo htmlspecialchars($item['quantity']); ?></td>
-                                <td>₱<?php echo number_format($item['price'] * $item['quantity'], 2); ?></td>
+                                <td>₱<?php echo number_format($item['amount'], 2); ?></td>
                             </tr>
                             <?php endforeach; ?>
                         </tbody>
                     </table>
-                    
-                    <a href="#" class="show-more">[Show More]</a>
-                    
                     <div class="order-total">
                         <span class="order-total-label">Order Total</span>
                         <span class="order-total-amount">₱<?php echo number_format($orderTotal, 2); ?></span>
                     </div>
                 </div>
-                <form method="post" action="orderdetails.php" class="action-buttons">
-                    <input type="hidden" name="order_id" value="<?php echo htmlspecialchars($orderId); ?>">
-                    <button type="submit" name="action" value="confirm" class="btn btn-confirm">Confirm Order</button>
-                    <button type="submit" name="action" value="cancel" class="btn btn-cancel">Cancel Order</button>
-                </form>
+                <div class="action-buttons">
+                    <button type="button" class="btn btn-confirm" onclick="showOrderMessage('confirmed')">Confirm Order</button>
+                    <button type="button" class="btn btn-cancel" onclick="showOrderMessage('cancelled')">Cancel Order</button>
+                </div>
+                <div id="order-action-message" style="display:none; margin-top:15px;"></div>
+                <script>
+                function showOrderMessage(action) {
+                    var msgDiv = document.getElementById('order-action-message');
+                    if (action === 'confirmed') {
+                        msgDiv.innerHTML = '<div class="alert alert-success">Order confirmed and set to Preparing.</div>';
+                    } else if (action === 'cancelled') {
+                        msgDiv.innerHTML = '<div class="alert alert-warning">Order cancelled.</div>';
+                    }
+                    msgDiv.style.display = 'block';
+                }
+                </script>
             </div>
         </main>
-        
-        <script>
-            // Handle show more functionality
-            document.querySelector('.show-more')?.addEventListener('click', function(e) {
-                e.preventDefault();
-                // This would show hidden rows in the table
-                alert('Show more functionality would go here');
-            });
-
-            // Handle order actions
-            document.querySelector('.btn-confirm')?.addEventListener('click', function(e) {
-                if(!confirm('Are you sure you want to confirm this order?')) {
-                    e.preventDefault();
-                }
-            });
-
-            document.querySelector('.btn-cancel')?.addEventListener('click', function(e) {
-                if(!confirm('Are you sure you want to cancel this order?')) {
-                    e.preventDefault();
-                }
-            });
-        </script>
         <script src="../js/new_sign_in.js"></script>
     </body>
 </html>

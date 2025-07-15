@@ -1,83 +1,65 @@
+<!-- User Role Label -->
+<span class="text-muted small role" style="color: black;font-weight: 500;font-size: 18px;">Admin/Seller</span>
 <?php
 session_start();
 
 // Database configuration
-$host = 'admin.dcism.org';
-$username = 's11820346';
-$password = 'SEULRENE_kangseulgi';
-$dbname = 's11820346_im2';
+$host = 'localhost';
+$user = 'root';
+$pass = '';
+$db = 'school_db';
 
 // Create connection
-$conn = new mysqli($host, $username, $password, $dbname);
+$mysqli = new mysqli("localhost", "root", "", "school_db");
 
 // Check connection
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+if ($mysqli->connect_error) {
+    die("Connection failed: " . $mysqli->connect_error);
 }
 
-if (!isset($_SESSION['user_id'])) {
-    header("Location: sign.php");
-    exit();
+// Handle restore action via PHP form POST
+$restore_message = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'restore') {
+    if (!isset($_POST['id']) || !is_numeric($_POST['id'])) {
+        $restore_message = '<div class="alert alert-danger">Invalid product ID</div>';
+    } else {
+        $productId = (int)$_POST['id'];
+        try {
+            $stmt = $mysqli->prepare("UPDATE product_inventory SET is_active = 1 WHERE id = ?");
+            $stmt->bind_param('i', $productId);
+            $stmt->execute();
+            if ($stmt->affected_rows > 0) {
+                $restore_message = '<div class="alert alert-success">Product restored successfully.</div>';
+            } else {
+                $restore_message = '<div class="alert alert-warning">Product not found or already restored.</div>';
+            }
+        } catch (Exception $e) {
+            $restore_message = '<div class="alert alert-danger">Database error: ' . htmlspecialchars($e->getMessage()) . '</div>';
+        }
+    }
 }
 
-// API Endpoint: Get Archived Products
-if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['action'] === 'get_archived') {
-    header('Content-Type: application/json');
-    
-    try {
-        $stmt = $conn->prepare("
+// Fetch archived products for display
+$archived_products = [];
+$search_term = isset($_GET['search']) ? trim($_GET['search']) : '';
+try {
+    if ($search_term !== '') {
+        $like = '%' . $mysqli->real_escape_string($search_term) . '%';
+        $stmt = $mysqli->prepare("
             SELECT id, product_name, product_description, color, size, quantity, unit_price 
             FROM product_inventory 
-            WHERE is_active = 0
+            WHERE is_active IS NULL AND (product_name LIKE ? OR product_description LIKE ?)
             ORDER BY id DESC
         ");
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $products = $result->fetch_all(MYSQLI_ASSOC);
-        
-        echo json_encode($products);
-    } catch (Exception $e) {
-        echo json_encode(['error' => $e->getMessage()]);
+        $stmt->bind_param('ss', $like, $like);
+    } else {
+        $stmt = $mysqli->prepare("
+            SELECT id, product_name, product_description, color, size, quantity, unit_price 
+            FROM product_inventory 
+            WHERE is_active IS NULL
+            ORDER BY id DESC
+        ");
     }
-    exit;
-}
-
-// API Endpoint: Restore Product
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'restore') {
-    header('Content-Type: application/json');
-    
-    if (!isset($_POST['id']) || !is_numeric($_POST['id'])) {
-        echo json_encode(['success' => false, 'message' => 'Invalid product ID']);
-        exit;
-    }
-
-    $productId = (int)$_POST['id'];
-    
-    try {
-        $stmt = $conn->prepare("UPDATE product_inventory SET is_active = 1 WHERE id = ?");
-        $stmt->bind_param('i', $productId);
-        $stmt->execute();
-        
-        if ($stmt->affected_rows > 0) {
-            echo json_encode(['success' => true, 'message' => 'Product restored successfully']);
-        } else {
-            echo json_encode(['success' => false, 'message' => 'Product not found or already restored']);
-        }
-    } catch (Exception $e) {
-        echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
-    }
-    exit;
-}
-
-// Regular Page Display
-$archived_products = [];
-try {
-    $stmt = $conn->prepare("
-        SELECT id, product_name, product_description, color, size, quantity, unit_price 
-        FROM product_inventory 
-        WHERE is_active = 0
-        ORDER BY id DESC
-    ");
     $stmt->execute();
     $result = $stmt->get_result();
     $archived_products = $result->fetch_all(MYSQLI_ASSOC);
@@ -105,7 +87,9 @@ try {
                         <div class="d-flex align-items-center">
                             
                             <div class="logo" style="font-family: Milker; flex: 0 0 auto;">
-                                <a href="landingpage.html">rekta</a>
+                                <a href="landingpage.html" class="navbar-brand" style="font-family: Milker; font-size: 2.2rem; color: white; text-decoration: none; font-weight: 700; letter-spacing: 2px;">
+                                    rekta
+                                </a>
                             </div>
                             
                             <ul class="nav nav-tabs border-0" style="margin-top: 6px;">
@@ -156,7 +140,7 @@ try {
                                     <li class="px-3 pt-3 pb-2">
                                         <div class="d-flex flex-column">
                                             <span class="fw-bold name" style="color: black;font-size: 20px;"></span>  
-                                            <span class="text-muted small role" style="color: black;font-weight: 500;font-size: 18px;">Standard User</span>  
+                                            <span class="text-muted small role" style="color: black;font-weight: 500;font-size: 18px;">Admin/Seller</span>   
                                         </div>
                                     </li>
                                     <li><hr class="dropdown-divider m-0"></li>
@@ -179,10 +163,15 @@ try {
             <main class="main-content">
                 <div class="container2-fluid px-4 py-3">
                     <div class="row g-4">
-                        <div class="d-flex justify-content-between mb-3">
-                            <input type="text" id="searchBox" class="form-control w-25" placeholder="Search...">
+                        <?php if (!empty($restore_message)) echo $restore_message; ?>
+                        <div class="d-flex justify-content-end">
+                            <form method="get" action="delist.php" style="width: 100%; max-width: 400px;">
+                                <div class="input-group">
+                                    <input type="text" name="search" class="form-control" placeholder="Search archived products..." value="<?php echo htmlspecialchars($search_term); ?>">
+                                    <button class="btn btn-primary" type="submit">Search</button>
+                                </div>
+                            </form>
                         </div>
-            
                         <table class="table table-bordered" id="dataTable">
                             <thead>
                                 <tr>
@@ -197,24 +186,33 @@ try {
                                 </tr>
                             </thead>
                             <tbody id="inventoryTable">
-                                <!-- inventory data will be loaded by JavaScript -->
+                                <?php if (!empty($archived_products)): ?>
+                                    <?php foreach ($archived_products as $product): ?>
+                                        <tr>
+                                            <td class="text-center"><?php echo $product['id']; ?></td>
+                                            <td><?php echo htmlspecialchars($product['product_name']); ?></td>
+                                            <td><?php echo htmlspecialchars($product['product_description']); ?></td>
+                                            <td class="text-center"><?php echo htmlspecialchars($product['color']); ?></td>
+                                            <td class="text-center"><?php echo htmlspecialchars($product['size'] ?? 'N/A'); ?></td>
+                                            <td class="text-center"><?php echo $product['quantity']; ?></td>
+                                            <td class="text-center">₱<?php echo number_format($product['unit_price'], 2); ?></td>
+                                            <td class="text-center">
+                                                <form method="post" action="delist.php" style="display:inline;">
+                                                    <input type="hidden" name="action" value="restore">
+                                                    <input type="hidden" name="id" value="<?php echo $product['id']; ?>">
+                                                    <button type="submit" class="btn btn-primary btn-sm">Restore</button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <tr><td colspan="8" class="text-center">No archived products found.</td></tr>
+                                <?php endif; ?>
                             </tbody>
                         </table>
-                        <ul class="pagination" id="paginationButtons">
-                            <li class="page-item" id="prevPage">
-                                <a class="page-link" href="#">Prev</a>
-                            </li>
-                            <li class="page-item" id="nextPage">
-                                <a class="page-link" href="#">Next</a>
-                            </li>
-                        </ul>
                     </div>
                 </div>
             </main>
         </div>
-        
-        <script src="../js/inventorydata2.js"></script>
-        <script src="../js/new_sign_in.js"></script>
-
     </body>
 </html>

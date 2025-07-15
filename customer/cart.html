@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Your Cart - Rekta</title>
+  <link rel="stylesheet" href="landingCSS.css" />
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="container nav-container" style="display: flex; align-items: center; justify-content: space-between; position: relative;">
+      <div class="logo" style="font-family: Milker;"><a href="landingpage.html">rekta</a></div>
+
+      <nav style="position: absolute; left: 50%; transform: translateX(-50%);">
+        <ul style="display: flex; gap: 1.5rem; list-style: none;">
+          <li><a href="clothing.html">Clothing</a></li>
+          <li><a href="cycling.html">Cycling</a></li>
+          <li><a href="accessories.html">Accessories</a></li>
+        </ul>
+      </nav>
+
+      <form action="#" method="GET" style="display: flex; align-items: center;">
+        <input type="text" name="q" placeholder="Search products..." style="padding: 0.4rem 0.75rem; border: none; border-radius: 4px 0 0 4px;">
+        <button type="submit" style="padding: 0.4rem 0.75rem; background: white; border: none; border-radius: 0 4px 4px 0; font-weight: bold; cursor: pointer;">
+          🔍
+        </button>
+      </form>
+    </div>
+    <a href="cart.html"><img src="cart-73-16.png"></a>
+  </header>
+
+  <!-- Cart Section -->
+  <section class="products">
+    <div class="container">
+      <h2>Your Shopping Cart</h2>
+
+      <!-- If cart is empty -->
+      <!-- <p style="text-align: center; margin-top: 2rem;">Your cart is empty.</p> -->
+
+      <!-- Cart items -->
+      <div style="display: flex; flex-direction: column; gap: 1.5rem; margin-top: 2rem;">
+        <!-- Cart Item -->
+        <div class="product-card" style="display: flex; gap: 1rem; align-items: center; justify-content: space-between;">
+          <img src="https://via.placeholder.com/120x120" alt="Product Image" style="width: 120px; height: 120px; object-fit: cover;">
+          <div style="flex: 1;">
+            <h4>Men's Cycling Jersey</h4>
+            <p>Size: M</p>
+            <p>₱2,500</p>
+          </div>
+          <div>
+            <label for="quantity1">Qty:</label>
+            <input id="quantity1" type="number" value="1" min="1" style="width: 50px; padding: 0.25rem;">
+          </div>
+          <div>
+            <button style="background: #000; color: #fff; padding: 0.5rem 1rem; border: none; cursor: pointer;">Remove</button>
+          </div>
+        </div>
+
+        <!-- Repeat more cart items below as needed -->
+      </div>
+
+      <!-- Cart Summary -->
+      <div style="margin-top: 3rem; text-align: right;">
+        <h3>Total: ₱2,500</h3>
+        <button style="background: #000; color: #fff; padding: 0.75rem 2rem; border: none; cursor: pointer; font-weight: bold;">Proceed to Checkout</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container" style="display: flex; flex-wrap: wrap; justify-content: space-between; padding: 2rem 0;">
+      <!-- Columns from your previous expanded footer here... -->
+      <!-- You can copy the footer structure we already built -->
+
+      <!-- Centered Social Media Icons -->
+      <div style="width: 100%; text-align: center; margin-top: 2rem;">
+        <h3 style="margin-bottom: 1rem;">Follow Us</h3>
+        <div class="social-icons" style="display: inline-flex; gap: 1.5rem; justify-content: center;">
+          <a href="https://facebook.com" target="_blank">
+            <img src="assets/icons/facebook.png" alt="Facebook" style="width: 32px; height: 32px;">
+          </a>
+          <a href="https://instagram.com" target="_blank">
+            <img src="assets/icons/instagram.png" alt="Instagram" style="width: 32px; height: 32px;">
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Full-width bottom bar -->
+    <div style="background-color: #111; text-align: center; padding: 1rem 0; width: 100%;">
+      <p style="margin: 0;">&copy; 2025 Rekta Cycling. All rights reserved. |
+        <a href="#" style="color: #fff;">Privacy</a> |
+        <a href="#" style="color: #fff;">Terms</a>
+      </p>
+    </div>
+  </footer>
+</body>
+</html>

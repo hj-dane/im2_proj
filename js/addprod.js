@@ -111,11 +111,6 @@ document.addEventListener("DOMContentLoaded", function() {
                             imageFile = null;
                             imageUpload.textContent = 'Upload Image';
                             fileInput.value = '';
-                            
-                            // Optionally redirect after delay
-                            setTimeout(() => {
-                                window.location.href = 'inventorylist.html';
-                            }, 1500);
                         } else {
                             throw new Error(data.message || 'Failed to add product');
                         }

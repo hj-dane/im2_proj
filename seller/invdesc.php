@@ -1,48 +1,14 @@
-<?php
-session_start();
-
-// Database configuration
-$host = 'localhost';
-$user = 'root';
-$pass = '';
-$db = 'school_db';
-
-// Create connection
-$mysqli = new mysqli("localhost", "root", "", "school_db");
-
-// Check connection
-if ($mysqli->connect_error) {
-    die("Connection failed: " . $mysqli->connect_error);
-}
-
-// if (!isset($_SESSION['user_id'])) {
-//     header("Location: ../auth.php");
-//     exit();
-// }
-
-
-$inventoryData = [];
-$query = "SELECT * FROM product_inventory";
-$result = $mysqli->query($query);
-if ($result) {
-    while ($row = $result->fetch_assoc()) {
-        $inventoryData[] = $row;
-    }
-}
-
-// Convert inventory data to JSON for JavaScript
-$inventoryDataJson = json_encode($inventoryData);
-?>
+<!-- User Role Label -->
+<span class="text-muted small role" style="color: black;font-weight: 500;font-size: 18px;">Admin/Seller</span>
 <!DOCTYPE html>
 <html>
     <head>
         <meta charset="utf-8">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-        <link rel="stylesheet" href="../styles/analys.css?v=3">
+        <link rel="stylesheet" href="../styles/invdesc.css">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-        <title>REKTA | Dashboard</title>
+        <title>REKTA | Product Details</title>
         <link rel="icon" type="image/x-icon" href="../assets/logo_stockflow.png">
         
     </head>
@@ -60,7 +26,7 @@ $inventoryDataJson = json_encode($inventoryData);
                         
                         <ul class="nav nav-tabs border-0" style="margin-top: 6px;">
                             <li class="nav-item">
-                                <a class="custom-nav-link custom-active" href="analytics.php" title="Dashboard">
+                                <a class="custom-nav-link" href="analytics.php" title="Dashboard">
                                     <i class="bi bi-speedometer2 fs-5"></i>
                                     <span class="d-none d-md-inline ms-2">DASHBOARD</span>
                                 </a>
@@ -72,7 +38,7 @@ $inventoryDataJson = json_encode($inventoryData);
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="custom-nav-link" aria-current="page" href="inventorylist.php" title="Inventory">
+                                <a class="custom-nav-link custom-active" aria-current="page" href="inventorylist.php" title="Inventory">
                                     <i class="bi bi-box-seam fs-5"></i>
                                     <span class="d-none d-md-inline ms-2">INVENTORY</span>
                                 </a>
@@ -106,7 +72,7 @@ $inventoryDataJson = json_encode($inventoryData);
                                 <li class="px-3 pt-3 pb-2">
                                     <div class="d-flex flex-column">
                                         <span class="fw-bold name" style="color: black;font-size: 20px;"></span>  
-                                        <span class="text-muted small role" style="color: black;font-weight: 500;font-size: 18px;">Admin/Seller</span>  
+                                        <span class="text-muted small role" style="color: black;font-weight: 500;font-size: 18px;">Admin/Seller</span>   
                                     </div>
                                 </li>
                                 <li><hr class="dropdown-divider m-0"></li>
@@ -126,52 +92,113 @@ $inventoryDataJson = json_encode($inventoryData);
                 </div>
             </div>
         </nav>
-        
+
         <main class="main-content">
-            <h1 style="padding-left: 58px;padding-top: 30px;padding-bottom: 28px;"><b>RECENT ACTIVITY</b></h1>
-            <hr>
-            <div class="dashboard">
-                <div class="parent">
-                    <div class="div1" style="margin-top: 35px;">  
-                        <div class="chart-container">
-                            <h2 style="padding-bottom: 35px;">Inventory by Category</h2>
-                            <div class="chart-wrapper">
-                                <canvas id="categoryChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="div3"> 
-                        <div class="card-container">
-                            <div class="card mb-3">
-                              <div class="card-header text-white">
-                                <h5 class="mb-0">Total Stock</h5>
-                              </div>
-                              <div class="card-body">
-                                <p class="display-5 mb-0" id="totalProducts">0</p>
-                                <footer class="blockquote-footer mt-2">All inventory items</footer>
-                              </div>
-                            </div>
-                        
-                            <div class="card mb-3">
-                              <div class="card-header text-white">
-                                <h5 class="mb-0">Low in Stock</h5>
-                              </div>
-                              <div class="card-body">
-                                <p class="display-5 mb-0" id="lowStock">0</p>
-                                <footer class="blockquote-footer mt-2">Items below threshold</footer>
-                              </div>
-                            </div>
-                          </div>
-                    </div>
+            <div class="container-itemdescc">
+                <h1 class="product-title"><b>Product Details</b></h1>
+                <hr>
+                <div class="row-top">
+                <div class="infor" id="productDescSection">
+                  <?php
+                  // Database connection
+                  $host = 'localhost';
+                  $user = 'root';
+                  $pass = '';
+                  $db = 'school_db';
+
+                    // Create connection
+                  $mysqli = new mysqli("localhost", "root", "", "school_db");
+                  
+                  // Check connection
+                  if ($mysqli->connect_error) {
+                        die("Connection failed: " . $mysqli->connect_error);
+                    }
+                  
+                  // Get product ID from URL
+                  $productId = isset($_GET['id']) ? intval($_GET['id']) : 0;
+                  
+                  // Fetch product details
+                  $sql = "SELECT pi.*, c.category_name 
+                          FROM product_inventory pi
+                          LEFT JOIN category c ON pi.category_id = c.id
+                          WHERE pi.id = ?";
+                  $stmt = $mysqli->prepare($sql);
+                  $stmt->bind_param("i", $productId);
+                  $stmt->execute();
+                  $result = $stmt->get_result();
+                  
+                  if ($result->num_rows > 0) {
+                      $product = $result->fetch_assoc();
+                      
+                      // Display product description
+                      echo '<h2><strong>' . htmlspecialchars($product['product_name']) . '</strong></h2>';
+                      echo '<p>' . htmlspecialchars($product['product_description']) . '</p>';
+                  } else {
+                      echo "<p>Product not found.</p>";
+                  }
+                  ?>
                 </div>
+          
+                <div class="infor" id="productDetailSection">
+                  <?php
+                  if (isset($product)) {
+                      // Display product details
+                      echo '<p><strong>Price:</strong> ₱' . number_format($product['unit_price'], 2) . '</p>';
+                      echo '<p><strong>Quantity:</strong> ' . htmlspecialchars($product['quantity']) . '</p>';
+                      echo '<p><strong>Color:</strong> ' . htmlspecialchars($product['color']) . '</p>';
+                      echo '<p><strong>Size:</strong> ' . ($product['size'] ? htmlspecialchars($product['size']) : 'N/A') . '</p>';
+                      echo '<p><strong>Category:</strong> ' . htmlspecialchars($product['category_name']) . '</p>';
+                  }
+                  
+                  // Close connection
+                  $stmt->close();
+                  $mysqli->close();
+                  ?>
+                </div>
+              </div>
+          
             </div>
         </main>
-
         <script>
-            // Pass PHP data to JavaScript
-            const inventoryData = <?php echo $inventoryDataJson; ?>;
+        document.addEventListener("DOMContentLoaded", function () {
+            // Add "Back to Inventory" button
+            const backButton = document.createElement('a');
+            backButton.href = 'inventorylist.php';
+            backButton.className = 'btn btn-back'; // Changed from 'btn-secondary' to 'btn-back'
+            backButton.innerHTML = '<i class="bi bi-arrow-left"></i> Back to Inventory';
+
+            // If you want to wrap it in a container
+            const buttonContainer = document.createElement('div');
+            buttonContainer.className = 'button-container';
+            buttonContainer.appendChild(backButton);
+            
+            if (productDescSection) {
+                productDescSection.insertAdjacentElement('beforebegin', buttonContainer);
+            }
+
+            // Profile dropdown functionality
+            const profileDropdown = document.getElementById('profileDropdown');
+            if (profileDropdown) {
+                profileDropdown.addEventListener('click', function() {
+                    const dropdownMenu = this.nextElementSibling;
+                    dropdownMenu.classList.toggle('show');
+                });
+            }
+
+            // Close dropdown when clicking outside
+            window.addEventListener('click', function(event) {
+                if (!event.target.matches('.dropdown-toggle')) {
+                    const dropdowns = document.getElementsByClassName('dropdown-menu');
+                    for (let i = 0; i < dropdowns.length; i++) {
+                        const openDropdown = dropdowns[i];
+                        if (openDropdown.classList.contains('show')) {
+                            openDropdown.classList.remove('show');
+                        }
+                    }
+                }
+            });
+        });
         </script>
-        <script src="../js/analysischart.js?v=6" defer></script>
         <script src="../js/new_sign_in.js"></script>
     </body>
 </html>

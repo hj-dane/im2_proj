@@ -59,7 +59,7 @@ class Auth {
                     if (response.redirect) {
                         window.location.href = response.redirect;
                     } else {
-                        window.location.href = '/dashboard.php'; // Default redirect
+                        window.location.href = '/seller/analytics.php'; // Default redirect
                     }
                 } else {
                     this.showErrors(this.loginForm, [response.message]);
@@ -94,7 +94,7 @@ class Auth {
                         if (response.redirect) {
                             window.location.href = response.redirect;
                         } else {
-                            window.location.href = '/login.php';
+                            window.location.href = '/auth.php';
                         }
                     }, 1500);
                 } else {

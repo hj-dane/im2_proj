@@ -11,10 +11,11 @@ html, body {
 }
 
 .main-content {
-  margin-top: 40px;
+  margin-top: 80px;
   margin-left: 50px;
   margin-right: 50px;
   flex: 1; 
+  padding-top: 50px;
   padding-bottom: 0;
 }
 

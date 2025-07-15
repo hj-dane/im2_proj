@@ -1,0 +1,3 @@
+- change css styles
+- do backend php and database
+- try to merge it with html and other pages

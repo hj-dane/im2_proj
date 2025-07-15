@@ -1,25 +1,47 @@
-document.addEventListener('DOMContentLoaded', () => {
-    let index = 0;
-    const images = document.getElementById('carouselImages');
-    const totalSlides = images.children.length;
-  
-    function showSlide(i) {
-      index = (i + totalSlides) % totalSlides;
-      images.style.transform = `translateX(${-index * 100}%)`;
-    }
-  
-    function nextSlide() {
-      showSlide(index + 1);
-    }
-  
-    function prevSlide() {
-      showSlide(index - 1);
-    }
-  
-    document.getElementById('nextBtn').addEventListener('click', nextSlide);
-    document.getElementById('prevBtn').addEventListener('click', prevSlide);
-  
-    // Auto-slide every 5 seconds
-    setInterval(nextSlide, 5000);
+document.addEventListener("DOMContentLoaded", () => {
+  const carousel = document.getElementById("carouselImages");
+  const images = carousel.querySelectorAll("img");
+  const totalImages = images.length;
+  let currentIndex = 0;
+  let intervalId;
+  let inactivityTimeout;
+  const AUTO_INTERVAL = 5000; // 5 seconds between slides
+  const INACTIVITY_RESET_TIME = 5000; // 5 seconds to resume autoplay
+
+  function updateCarousel() {
+    carousel.style.transform = `translateX(-${currentIndex * 100}%)`;
+  }
+
+  function showNextImage() {
+    currentIndex = (currentIndex + 1) % totalImages;
+    updateCarousel();
+  }
+
+  function startAutoSlide() {
+    clearInterval(intervalId);
+    intervalId = setInterval(showNextImage, AUTO_INTERVAL);
+  }
+
+  function stopAutoSlideTemporarily() {
+    clearInterval(intervalId); // Stop current auto loop
+    clearTimeout(inactivityTimeout); // Reset inactivity timeout
+    inactivityTimeout = setTimeout(() => {
+      startAutoSlide(); // Resume auto after inactivity period
+    }, INACTIVITY_RESET_TIME);
+  }
+
+  document.getElementById("prevBtn").addEventListener("click", () => {
+    currentIndex = (currentIndex - 1 + totalImages) % totalImages;
+    updateCarousel();
+    stopAutoSlideTemporarily();
   });
-  
+
+  document.getElementById("nextBtn").addEventListener("click", () => {
+    currentIndex = (currentIndex + 1) % totalImages;
+    updateCarousel();
+    stopAutoSlideTemporarily();
+  });
+
+  // Start autoplay on load
+  startAutoSlide();
+});
