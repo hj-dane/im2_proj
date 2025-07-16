@@ -1,2 +1,0 @@
-All newly added files must be in pull request before it will be merged to the main branch.
-- It is advisable to make another branch to seperate main code and other edited files to monitor changes and versions.
