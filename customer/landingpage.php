@@ -1,20 +1,14 @@
-<?php
-// Simulated cart array — replace this with $_SESSION['cart'] in the future
-$cart = [['name' => 'LESSERAFIM Shoe', 'price' => 190.90, 'qty' => 1]];
-?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Your Cart | REKTA Cycling</title>
+  <title>Rekta Cycling</title>
   <link rel="stylesheet" href="landingCSS.css" />
-  <link rel="stylesheet" href="cart.css" />
+  <script src="landingJS.js"></script>
 </head>
 <body>
 
-  <!-- Header -->
   <header>
     <div class="container">
       <div class="nav-container" style="display: flex; align-items: center; justify-content: space-between; position: relative;">
@@ -55,56 +49,74 @@ $cart = [['name' => 'LESSERAFIM Shoe', 'price' => 190.90, 'qty' => 1]];
       </div>
     </div>
   </header>
+    
 
-  <!-- Cart Section -->
-<section class="cart-section">
-  <div class="container">
-    <h2>Your Shopping Cart</h2>
+  <section class="hero">
+    <div class="hero-content">
+      <h1>Ride With Style</h1>
+      <p>Find the perfect REKTA item for you.</p>
+      <br>
+      <a href="#" class="btn">Shop Now</a>
+    </div>
+  </section>
 
-    <?php if (empty($cart)): ?>
-      <div class="cart-empty">
-        <p>Your cart is currently empty.</p>
-        <a href="landingpage.php" class="btn">Start Shopping</a>
-      </div>
-    <?php else: ?>
-      <div class="cart-table">
-        <table>
-          <thead>
-            <tr>
-              <th>Product</th>
-              <th>Qty</th>
-              <th>Price</th>
-              <th>Subtotal</th>
-            </tr>
-          </thead>
-          <tbody>
-            <?php
-              $total = 0;
-              foreach ($cart as $item):
-                $subtotal = $item['price'] * $item['qty'];
-                $total += $subtotal;
-            ?>
-              <tr>
-                <td><?php echo htmlspecialchars($item['name']); ?></td>
-                <td><?php echo $item['qty']; ?></td>
-                <td>$<?php echo number_format($item['price'], 2); ?></td>
-                <td>$<?php echo number_format($subtotal, 2); ?></td>
-              </tr>
-            <?php endforeach; ?>
-          </tbody>
-        </table>
-
-        <div class="cart-total">
-          <strong>Total: </strong>$<?php echo number_format($total, 2); ?>
+  <section class="products">
+    <div class="container">
+      <br>
+      <h2>Featured Products</h2>
+      <div class="carousel">
+        <div class="carousel-images" id="carouselImages">
+          <a href="clothing.html"><img src="carousel1.png" alt="Men's Collection" /></a>
+          <a href="cycling.html"><img src="carousel2.png" alt="Women's Collection" /></a>
+          <a href="accessories.html"><img src="carousel3.png" alt="Accessories" /></a>
         </div>
-        <a href="checkout.php" class="btn">Proceed to Checkout</a>
+        <button class="carousel-button prev" id="prevBtn">❮</button>
+        <button class="carousel-button next" id="nextBtn">❯</button>
       </div>
-    <?php endif; ?>
+      </div>
+      <?php
+// Connect to the database
+$host = "localhost";
+$user = "root";
+$pass = "";
+$dbname = "nickimnjaj"; // Replace with your actual DB name
+
+$conn = new mysqli($host, $user, $pass, $dbname);
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Get all rows from nikitaminaj
+$sql = "SELECT belly, nicki, ariana, dua FROM nikitaminaj";
+$result = $conn->query($sql);
+?>
+
+<section class="products">
+  <div class="container">
+    <h2>Featured Products</h2>
+    <div class="product-grid">
+      <?php if ($result->num_rows > 0): ?>
+        <?php while ($row = $result->fetch_assoc()): ?>
+          <div class="product-card">
+          <img src="<?php echo htmlspecialchars($row['image']); ?>" alt="Product Image">
+            <p><?php echo htmlspecialchars($row['belly']); ?></p>
+            <span>$<?php echo number_format($row['nicki'], 2); ?></span>
+            <!-- Optional: display dua or ariana if needed -->
+          </div>
+        <?php endwhile; ?>
+      <?php else: ?>
+        <p>No products found.</p>
+      <?php endif; ?>
+    </div>
   </div>
 </section>
 
+<?php $conn->close(); ?>
 
-  <!-- Footer -->
+
+    </div>
+  </section>
+
   <footer>
     <div class="container" style="display: flex; flex-wrap: wrap; justify-content: space-between; padding: 2rem 0;">
       
@@ -166,6 +178,6 @@ $cart = [['name' => 'LESSERAFIM Shoe', 'price' => 190.90, 'qty' => 1]];
       </p>
     </div>
   </footer>
-
+  
 </body>
 </html>

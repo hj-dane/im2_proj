@@ -23,7 +23,6 @@
         <nav style="position: absolute; left: 50%; transform: translateX(-50%);">
           <ul style="display: flex; gap: 2rem; list-style: none;">
             <li><a href="clothing.php">Clothing</a></li>
-            <li><a href="cycling.php">Cycling</a></li>
             <li><a href="accessories.php">Accessories</a></li>
             <li><a href="contact us.php">Contact Us</a></li>
           </ul>
@@ -42,6 +41,9 @@
           </a>
           <a href="login.php">
             <img src="user.png" alt="User" style="cursor: pointer;">
+          </a>
+          <a href="favorites.php">
+            <img src="favorites.webp"  style="width: 16px; height: 16px; cursor: pointer;">
           </a>
         </div>
   

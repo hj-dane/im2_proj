@@ -104,466 +104,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="accessories.css">
     <title>REKTA Cycling Accessories | Adidas Inspired</title>
-    <style>
-        /* Basic Reset */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: "Helvetica", sans-serif;
-            background-color: #fff;
-            color: #111;
-            line-height: 1.6;
-        }
-        
-        .container {
-            width: 90%;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        
-        header {
-            background: #000;
-            color: #fff;
-            padding: 1rem 0;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        .nav-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .logo {
-            font-size: 1.8rem;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            font-family: Milker;
-        }
-        
-        .nav-right {
-            display: flex;
-            align-items: center;
-            gap: 2rem;
-        }
-        
-        .search-container {
-            position: relative;
-        }
-        
-        .search-input {
-            padding: 0.6rem 1rem;
-            padding-right: 2.5rem;
-            border: 2px solid #333;
-            border-radius: 25px;
-            background: transparent;
-            color: white;
-            font-size: 0.9rem;
-            width: 200px;
-            transition: all 0.3s;
-        }
-        
-        .search-input::placeholder {
-            color: #ccc;
-        }
-        
-        .search-input:focus {
-            outline: none;
-            border-color: #f15a24;
-            background: rgba(255,255,255,0.1);
-        }
-        
-        .search-btn {
-            position: absolute;
-            right: 8px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: #ccc;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: color 0.3s;
-        }
-        
-        .search-btn:hover {
-            color: #f15a24;
-        }
-        
-        nav ul {
-            list-style: none;
-            display: flex;
-            gap: 2rem;
-        }
-        
-        nav a {
-            color: white;
-            text-decoration: none;
-            font-weight: 600;
-            transition: color 0.3s;
-            position: relative;
-        }
-        
-        nav a:hover {
-            color: #f15a24;
-        }
-        
-        nav a::after {
-            content: '';
-            position: absolute;
-            bottom: -5px;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: #f15a24;
-            transition: width 0.3s;
-        }
-        
-        nav a:hover::after {
-            width: 100%;
-        }
-        
-        .hero {
-            background: linear-gradient(135deg, #000 0%, #333 100%);
-            height: 60vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            text-align: center;
-            position: relative;
-            margin-bottom: 3rem;
-        }
-        
-        .hero-content {
-            position: relative;
-            z-index: 2;
-        }
-        
-        .hero h1 {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            font-weight: 700;
-            letter-spacing: 1px;
-        }
-        
-        .hero p {
-            font-size: 1.2rem;
-            opacity: 0.9;
-            max-width: 600px;
-            margin: 0 auto 2rem;
-        }
-        
-        .btn {
-            display: inline-block;
-            padding: 0.75rem 1.5rem;
-            background: #f15a24;
-            color: #fff;
-            text-decoration: none;
-            font-weight: bold;
-            margin-top: 1rem;
-            border-radius: 30px;
-            transition: all 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .btn:hover {
-            background: #000;
-            transform: translateY(-2px);
-        }
-        
-        /* Main Content */
-        .main-content {
-            display: flex;
-            gap: 3rem;
-            margin-bottom: 4rem;
-        }
-        
-        /* Sidebar */
-        .sidebar {
-            width: 280px;
-            background: #f8f8f8;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            height: fit-content;
-            position: sticky;
-            top: 100px;
-        }
-        
-        .sidebar h2 {
-            margin-bottom: 2rem;
-            font-size: 1.4rem;
-            border-bottom: 3px solid #f15a24;
-            padding-bottom: 0.8rem;
-            color: #000;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .sidebar label {
-            display: block;
-            margin-top: 1.5rem;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-            color: #333;
-        }
-        
-        .sidebar select {
-            width: 100%;
-            padding: 0.8rem;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 1rem;
-            background: white;
-            transition: all 0.3s;
-        }
-        
-        .sidebar select:focus {
-            border-color: #f15a24;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(241, 90, 36, 0.1);
-        }
-        
-        .filter-btn {
-            width: 100%;
-            padding: 0.8rem;
-            background: #000;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            margin-top: 1.5rem;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        
-        .filter-btn:hover {
-            background: #f15a24;
-        }
-        
-        /* Products Section */
-        .products-container {
-            flex-grow: 1;
-        }
-        
-        .products-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2.5rem;
-            padding-bottom: 1rem;
-            border-bottom: 2px solid #f0f0f0;
-        }
-        
-        .products-header h2 {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #000;
-        }
-        
-        .sort-select {
-            padding: 0.6rem 1rem;
-            border: 2px solid #e0e0e0;
-            border-radius: 6px;
-            font-weight: 500;
-            background: white;
-        }
-        
-        .products {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 2.5rem;
-        }
-        
-        .product-card {
-            background: #fff;
-            border-radius: 16px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-            overflow: hidden;
-            transition: all 0.4s ease;
-            cursor: pointer;
-            border: 1px solid #f0f0f0;
-        }
-        
-        .product-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-            border-color: #f15a24;
-        }
-        
-        .product-image-container {
-            position: relative;
-            overflow: hidden;
-            background: #f8f8f8;
-            aspect-ratio: 1;
-        }
-        
-        .product-card img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.4s ease;
-        }
-        
-        .product-card:hover img {
-            transform: scale(1.05);
-        }
-        
-        .product-info {
-            padding: 1.5rem;
-        }
-        
-        .product-card h3 {
-            font-weight: 700;
-            font-size: 1.2rem;
-            margin-bottom: 0.8rem;
-            color: #111;
-            line-height: 1.3;
-        }
-        
-        .product-card p {
-            font-weight: 700;
-            color: #f15a24;
-            margin-bottom: 1.5rem;
-            font-size: 1.3rem;
-        }
-        
-        .product-card button {
-            background: #000;
-            color: #fff;
-            border: none;
-            padding: 0.8rem 1.5rem;
-            border-radius: 30px;
-            font-weight: 600;
-            cursor: pointer;
-            font-size: 0.95rem;
-            transition: all 0.3s;
-            width: 100%;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .product-card button:hover {
-            background: #f15a24;
-            transform: translateY(-2px);
-        }
-        
-        /* Quick View Overlay */
-        .quick-view {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.8);
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        
-        .product-image-container:hover .quick-view {
-            opacity: 1;
-        }
-        
-        /* Footer */
-        footer {
-            background: #000;
-            color: #fff;
-            text-align: center;
-            padding: 2rem 0;
-            margin-top: 3rem;
-            font-weight: 600;
-            font-size: 0.9rem;
-            letter-spacing: 1px;
-        }
-        
-        /* Responsive Design */
-        @media (max-width: 1200px) {
-            .products {
-                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-                gap: 2rem;
-            }
-        }
-        
-        @media (max-width: 900px) {
-            .main-content {
-                flex-direction: column;
-                gap: 2rem;
-            }
-            
-            .sidebar {
-                width: 100%;
-                position: static;
-            }
-            
-            .hero h1 {
-                font-size: 2.5rem;
-            }
-            
-            .products {
-                grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-                gap: 1.5rem;
-            }
-            
-            nav ul {
-                gap: 1rem;
-            }
-            
-            .nav-right {
-                flex-direction: column;
-                gap: 1rem;
-            }
-            
-            .search-input {
-                width: 180px;
-            }
-        }
-        
-        @media (max-width: 600px) {
-            .products {
-                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-                gap: 1rem;
-            }
-            
-            .hero h1 {
-                font-size: 2rem;
-            }
-            
-            .hero p {
-                font-size: 1rem;
-            }
-            
-            .products-header {
-                flex-direction: column;
-                gap: 1rem;
-                align-items: flex-start;
-            }
-
-            @font-face {
-                font-family: Milker;
-                src: url(Milker.otf);
-            }
-
-            header a{
-                text-decoration: none;
-                font-family: Milker;
-            }
-        }
-    </style>
 </head>
 <body>
 
@@ -580,7 +122,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <nav style="position: absolute; left: 50%; transform: translateX(-50%);">
           <ul style="display: flex; gap: 2rem; list-style: none;">
             <li><a href="clothing.php">Clothing</a></li>
-            <li><a href="cycling.php">Cycling</a></li>
             <li><a href="accessories.php">Accessories</a></li>
             <li><a href="contact us.php">Contact Us</a></li>
           </ul>
@@ -599,6 +140,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           </a>
           <a href="login.php">
             <img src="user.png" alt="User" style="cursor: pointer;">
+          </a>
+          <a href="favorites.php">
+            <img src="favorites.webp"  style="width: 16px; height: 16px; cursor: pointer;">
           </a>
         </div>
   
@@ -696,10 +240,66 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </div>
 
 <footer>
-    <div class="container">
-        &copy; 2025 REKTA Cycling. All rights reserved.
+    <div class="container" style="display: flex; flex-wrap: wrap; justify-content: space-between; padding: 2rem 0;">
+      
+      <!-- Column 1: Shop -->
+      <div style="flex: 1 1 200px; margin-bottom: 1rem;">
+        <h3>Shop</h3>
+        <ul style="list-style: none; padding: 0;">
+          <li><a href="mens.html" style="color: #fff;">Men</a></li>
+          <li><a href="womens.html" style="color: #fff;">Women</a></li>
+          <li><a href="#" style="color: #fff;">Accessories</a></li>
+        </ul>
+      </div>
+  
+      <!-- Column 2: Support -->
+      <div style="flex: 1 1 200px; margin-bottom: 1rem;">
+        <h3>Support</h3>
+        <ul style="list-style: none; padding: 0;">
+          <li><a href="#" style="color: #fff;">Help</a></li>
+          <li><a href="#" style="color: #fff;">Returns</a></li>
+          <li><a href="#" style="color: #fff;">Order Tracker</a></li>
+        </ul>
+      </div>
+  
+      <!-- Column 3: Company Info -->
+      <div style="flex: 1 1 200px; margin-bottom: 1rem;">
+        <h3>Company</h3>
+        <ul style="list-style: none; padding: 0;">
+          <li><a href="#" style="color: #fff;">About Us</a></li>
+          <li><a href="#" style="color: #fff;">Careers</a></li>
+          <li><a href="#" style="color: #fff;">Sustainability</a></li>
+        </ul>
+      </div>
+  
+      <!-- Column 4: Newsletter -->
+      <div style="flex: 1 1 300px; margin-bottom: 1rem;">
+        <h3>Sign up for updates</h3>
+        <form>
+          <input type="email" placeholder="Your email" style="padding: 0.5rem; width: 80%; margin-bottom: 0.5rem;">
+          <br>
+          <button type="submit" class="btn" style="background: #fff; color: #000;">Subscribe</button>
+        </form>
+      </div>
+
+      <!-- Column 5: Social Media -->
+      <div style="flex: 1 1 200px; margin-bottom: 1rem;">
+        <h3>Follow Us</h3>
+        <div style="display: flex; gap: 1rem; align-items: center; margin-inline: auto;">
+          <a href="https://www.facebook.com/rektacycling"><img src="facebook.webp" alt="Facebook" style="width: 32px; height: 32px;"></a>
+          <a href="https://www.instagram.com/rektacycling/"><img src="instagram.webp" alt="Instagram" style="width: 32px; height: 32px;"></a>
+        </div>
+      </div>
+
+  
+    <!-- Bottom Bar -->
+    <div style="background-color: #111; text-align: center; padding: 1rem 0; width: 100%;">
+      <p style="margin: 0;">&copy; 2025 Rekta Cycling. All rights reserved. |
+        <a href="#" style="color: #fff;">Privacy</a> |
+        <a href="#" style="color: #fff;">Terms</a>
+      </p>
     </div>
-</footer>
+  </footer>
 
 <script>
 function addToCart(productId) {

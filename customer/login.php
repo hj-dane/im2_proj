@@ -1,20 +1,15 @@
-<?php
-// Simulated cart array — replace this with $_SESSION['cart'] in the future
-$cart = [['name' => 'LESSERAFIM Shoe', 'price' => 190.90, 'qty' => 1]];
-?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Your Cart | REKTA Cycling</title>
+  <title>Login | REKTA Cycling</title>
   <link rel="stylesheet" href="landingCSS.css" />
-  <link rel="stylesheet" href="cart.css" />
+  <link rel="stylesheet" href="login.css" />
 </head>
 <body>
 
-  <!-- Header -->
+  <!-- Header (same as accessories or hybrid header) -->
   <header>
     <div class="container">
       <div class="nav-container" style="display: flex; align-items: center; justify-content: space-between; position: relative;">
@@ -56,55 +51,19 @@ $cart = [['name' => 'LESSERAFIM Shoe', 'price' => 190.90, 'qty' => 1]];
     </div>
   </header>
 
-  <!-- Cart Section -->
-<section class="cart-section">
-  <div class="container">
-    <h2>Your Shopping Cart</h2>
-
-    <?php if (empty($cart)): ?>
-      <div class="cart-empty">
-        <p>Your cart is currently empty.</p>
-        <a href="landingpage.php" class="btn">Start Shopping</a>
-      </div>
-    <?php else: ?>
-      <div class="cart-table">
-        <table>
-          <thead>
-            <tr>
-              <th>Product</th>
-              <th>Qty</th>
-              <th>Price</th>
-              <th>Subtotal</th>
-            </tr>
-          </thead>
-          <tbody>
-            <?php
-              $total = 0;
-              foreach ($cart as $item):
-                $subtotal = $item['price'] * $item['qty'];
-                $total += $subtotal;
-            ?>
-              <tr>
-                <td><?php echo htmlspecialchars($item['name']); ?></td>
-                <td><?php echo $item['qty']; ?></td>
-                <td>$<?php echo number_format($item['price'], 2); ?></td>
-                <td>$<?php echo number_format($subtotal, 2); ?></td>
-              </tr>
-            <?php endforeach; ?>
-          </tbody>
-        </table>
-
-        <div class="cart-total">
-          <strong>Total: </strong>$<?php echo number_format($total, 2); ?>
-        </div>
-        <a href="checkout.php" class="btn">Proceed to Checkout</a>
-      </div>
-    <?php endif; ?>
+  <!-- Login Form -->
+  <div class="login-container">
+    <h2>Login to Your Account</h2>
+    <form action="authenticate.php" method="POST">
+      <input type="text" name="username" placeholder="Username or Email" required />
+      <input type="password" name="password" placeholder="Password" required />
+      <button type="submit">Log In</button>
+    </form>
+    <div class="signup-link">
+      Don't have an account? <a href="register.php">Sign up</a>
+    </div>
   </div>
-</section>
 
-
-  <!-- Footer -->
   <footer>
     <div class="container" style="display: flex; flex-wrap: wrap; justify-content: space-between; padding: 2rem 0;">
       
