@@ -27,31 +27,53 @@
     background: #000;
     color: #fff;
     padding: 1rem 0;
-  }
-  
-  .nav-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   }
   
   .logo {
-    font-size: 1.5rem;
+    font-size: 1.8rem;
     font-weight: bold;
     text-transform: uppercase;
+    letter-spacing: 2px;
+    font-family: Milker;
   }
   
   nav ul {
     list-style: none;
     display: flex;
-    gap: 1.5rem;
+    gap: 2rem;
   }
   
   nav a {
     color: white;
     text-decoration: none;
-    font-weight: 500;
+    font-weight: 600;
+    position: relative;
+    transition: color 0.3s;
   }
+  
+  nav a:hover {
+    color: #f15a24;
+  }
+  
+  nav a::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: #f15a24;
+    transition: width 0.3s;
+  }
+  
+  nav a:hover::after {
+    width: 100%;
+  }
+  
   
   .hero {
     background: url(mainimage.jpg) no-repeat center center/cover;
@@ -87,12 +109,29 @@
   .btn {
     display: inline-block;
     padding: 0.75rem 1.5rem;
-    background: #fff;
-    color: #000;
+    background-image: linear-gradient(to right, #f15a24 0%, #f15a24 100%);
+    color: black;
+    background-color: white;    
+    background-size: 0% 100%;
+    background-repeat: no-repeat;
+    background-position: left;
+    border: 2px solid black;
     text-decoration: none;
     font-weight: bold;
-    margin-top: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-radius: 30px;
+    transition: background-size 0.4s ease, color 0.4s ease;
+    position: relative;
+    z-index: 1;
   }
+  
+  .btn:hover {
+    background-size: 100% 100%;
+    color: white;
+    border: 2px solid #f15a24;
+  }
+  
   
   * {
     box-sizing: border-box;
@@ -231,8 +270,71 @@
     flex-wrap: wrap; /* for mobile friendliness */
   }
   
-  
   @font-face {
     font-family: Milker;
     src: url(Milker.otf);
   }
+
+  .search-bar-header {
+    display: flex;
+    align-items: center;
+    background: #000;
+    border-radius: 30px;
+    box-shadow: none;
+    border: 1.5px solid #222;
+    overflow: hidden;
+    margin-left: 2rem;
+    min-width: 220px;
+    max-width: 350px;
+    width: 100%;
+}
+.search-bar-header input[type="text"] {
+    flex: 1;
+    border: none;
+    padding: 0.7rem 1.2rem;
+    font-size: 1rem;
+    background: transparent;
+    outline: none;
+    color: #fff;
+}
+.search-bar-header input[type="text"]::placeholder {
+    color: #ccc;
+    opacity: 1;
+}
+.search-bar-header button {
+    background: #000;
+    color: #fff;
+    border: none;
+    padding: 0 1.2rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.3s;
+    border-radius: 0 30px 30px 0;
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+.search-bar-header button:hover {
+    background: #222;
+}
+.search-bar-header button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.search-bar-header button svg {
+    width: 18px;
+    height: 18px;
+    fill: #fff;
+}
+@media (max-width: 600px) {
+    .search-bar-header input[type="text"] {
+        padding: 0.7rem 1rem;
+        font-size: 1rem;
+    }
+    .search-bar-header button {
+        padding: 0 1rem;
+        font-size: 1rem;
+    }
+}    
