@@ -67,9 +67,65 @@
   </section>
 
   <!-- Footer -->
-  <footer>
-    <div class="container">
-      &copy; 2025 REKTA Cycling. All rights reserved.
+<footer>
+    <div class="container" style="display: flex; flex-wrap: wrap; justify-content: space-between; padding: 2rem 0;">
+      
+      <!-- Column 1: Shop -->
+      <div style="flex: 1 1 200px; margin-bottom: 1rem;">
+        <h3>Shop</h3>
+        <ul style="list-style: none; padding: 0;">
+          <li><a href="mens.html" style="color: #fff;">Men</a></li>
+          <li><a href="womens.html" style="color: #fff;">Women</a></li>
+          <li><a href="#" style="color: #fff;">Accessories</a></li>
+        </ul>
+      </div>
+  
+      <!-- Column 2: Support -->
+      <div style="flex: 1 1 200px; margin-bottom: 1rem;">
+        <h3>Support</h3>
+        <ul style="list-style: none; padding: 0;">
+          <li><a href="#" style="color: #fff;">Help</a></li>
+          <li><a href="#" style="color: #fff;">Returns</a></li>
+          <li><a href="#" style="color: #fff;">Order Tracker</a></li>
+        </ul>
+      </div>
+  
+      <!-- Column 3: Company Info -->
+      <div style="flex: 1 1 200px; margin-bottom: 1rem;">
+        <h3>Company</h3>
+        <ul style="list-style: none; padding: 0;">
+          <li><a href="#" style="color: #fff;">About Us</a></li>
+          <li><a href="#" style="color: #fff;">Careers</a></li>
+          <li><a href="#" style="color: #fff;">Sustainability</a></li>
+        </ul>
+      </div>
+  
+      <!-- Column 4: Newsletter -->
+      <div style="flex: 1 1 300px; margin-bottom: 1rem;">
+        <h3>Sign up for updates</h3>
+        <form>
+          <input type="email" placeholder="Your email" style="padding: 0.5rem; width: 80%; margin-bottom: 0.5rem;">
+          <br>
+          <button type="submit" class="btn" style="background: #fff; color: #000;">Subscribe</button>
+        </form>
+      </div>
+
+      <!-- Column 5: Social Media -->
+      <div style="flex: 1 1 200px; margin-bottom: 1rem;">
+        <h3>Follow Us</h3>
+        <div style="display: flex; gap: 1rem; align-items: center; margin-inline: auto;">
+          <a href="https://www.facebook.com/rektacycling"><img src="facebook.webp" alt="Facebook" style="width: 32px; height: 32px;"></a>
+          <a href="https://www.instagram.com/rektacycling/"><img src="instagram.webp" alt="Instagram" style="width: 32px; height: 32px;"></a>
+        </div>
+      </div>
+
+  
+    <!-- Bottom Bar -->
+    <div style="background-color: #111; text-align: center; padding: 1rem 0; width: 100%;">
+      <p style="margin: 0;">&copy; 2025 Rekta Cycling. All rights reserved. |
+        <a href="#" style="color: #fff;">Privacy</a> |
+        <a href="#" style="color: #fff;">Terms</a>
+      </p>
     </div>
   </footer>
 
