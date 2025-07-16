@@ -19,8 +19,6 @@ if ($mysqli->connect_error) {
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Remove JSON header for redirect
-    
     // Get form data
     $productName = $_POST['product_name'] ?? '';
     $description = $_POST['product_description'] ?? '';
@@ -30,24 +28,59 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $color = $_POST['color'] ?? '';
     $size = $_POST['size'] ?? null;
     
+    // ========== IMAGE UPLOAD HANDLING ========== //
+    $imagePath = null; // Initialize as null if no image uploaded
+    
+    if (isset($_FILES['product_image']) && $_FILES['product_image']['error'] === UPLOAD_ERR_OK) {
+        $uploadDir = '../uploads/';
+        
+        // Create directory if it doesn't exist
+        if (!file_exists($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+        
+        // Generate unique filename to prevent conflicts
+        $fileName = uniqid() . '_' . basename($_FILES['product_image']['name']);
+        $targetPath = $uploadDir . $fileName;
+        
+        // Validate image file type
+        $allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+        $fileType = mime_content_type($_FILES['product_image']['tmp_name']);
+        
+        if (in_array($fileType, $allowedTypes)) {
+            if (move_uploaded_file($_FILES['product_image']['tmp_name'], $targetPath)) {
+                $imagePath = $targetPath; // Store relative path
+            } else {
+                // Handle upload error
+                header('Location: inventorylist.php?added=0&error=upload_failed');
+                exit;
+            }
+        } else {
+            // Handle invalid file type
+            header('Location: inventorylist.php?added=0&error=invalid_file_type');
+            exit;
+        }
+    }
+    // ========== END IMAGE UPLOAD ========== //
+    
     // Validate required fields
     if (empty($productName)) {
-        echo json_encode(['success' => false, 'message' => 'Product name is required']);
+        header('Location: inventorylist.php?added=0&error=name_required');
         exit;
     }
     
     if ($price <= 0) {
-        echo json_encode(['success' => false, 'message' => 'Price must be greater than 0']);
+        header('Location: inventorylist.php?added=0&error=invalid_price');
         exit;
     }
     
     if ($quantity < 0) {
-        echo json_encode(['success' => false, 'message' => 'Quantity cannot be negative']);
+        header('Location: inventorylist.php?added=0&error=invalid_quantity');
         exit;
     }
     
     if (empty($category)) {
-        echo json_encode(['success' => false, 'message' => 'Category is required']);
+        header('Location: inventorylist.php?added=0&error=category_required');
         exit;
     }
     
@@ -55,29 +88,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $categoryId = ($category === 'Clothing') ? 1 : 2;
     
     try {
-        // Insert into database
-        $stmt = $mysqli ->prepare("
+        // Insert into database (now including image path)
+        $stmt = $mysqli->prepare("
             INSERT INTO product_inventory 
-            (product_name, product_description, unit_price, category_id, quantity, color, size, is_active) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, 1)
+            (product_name, product_description, unit_price, category_id, quantity, color, size, is_active, image) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?)
         ");
-        $stmt->bind_param('ssdisss', $productName, $description, $price, $categoryId, $quantity, $color, $size);
+        
+        // Bind parameters (note the extra 's' for image path)
+        $stmt->bind_param('ssdissss', $productName, $description, $price, $categoryId, $quantity, $color, $size, $imagePath);
+        
         $stmt->execute();
+        
         if ($stmt->affected_rows > 0) {
-            // Redirect to inventorylist.php with success message
             header('Location: inventorylist.php?added=1');
             exit;
         } else {
-            // Redirect with error
-            header('Location: inventorylist.php?added=0');
+            header('Location: inventorylist.php?added=0&error=db_error');
             exit;
         }
     } catch (Exception $e) {
-        header('Location: inventorylist.php?added=0');
+        header('Location: inventorylist.php?added=0&error=db_exception');
         exit;
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html>
     <head>
@@ -229,7 +265,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </div>
                             <div class="form-group">
                                 <label>Product Images</label>
-                                <div class="image-upload" id="imageUpload">Upload Image</div>
+                                <label for="product-image" style="cursor: pointer;">
+                                    <div class="image-upload" id="imageUpload">
+                                        <div id="imagePreview" style="width: 100px; height: 100px; border: 1px dashed #ccc; display: flex; align-items: center; justify-content: center; margin-bottom: 10px;">
+                                            <span>Click to upload</span>
+                                        </div>
+                                        <span id="fileName">No image selected</span>
+                                    </div>
+                                </label>
                                 <input type="file" id="product-image" name="product_image" style="display: none;" accept="image/*">
                             </div>
                             <button class="submit-btn" type="submit">Add Product</button>
@@ -239,7 +282,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </main>
 
-        <!-- <script src="../js/addprod.js"></script> -->
+        <script>
+        document.getElementById('product-image').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // Show filename
+                document.getElementById('fileName').textContent = file.name;
+                
+                // Show preview
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const preview = document.getElementById('imagePreview');
+                    preview.innerHTML = `<img src="${event.target.result}" style="max-width: 100%; max-height: 100%;">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        </script>
         <script src="../js/new_sign_in.js"></script>
 
     </body>
