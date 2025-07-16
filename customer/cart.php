@@ -1,145 +1,172 @@
 <?php
-session_start();
-$host = 'localhost';
-$dbname = 'school_db';
-$username = 'root';
-$password = '';
-
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch(PDOException $e) {
-    die("Database connection failed: " . $e->getMessage());
-}
-
-// Cart logic
-if (!isset($_SESSION['cart'])) {
-    $_SESSION['cart'] = [];
-}
-
-// Add to cart (from accessories/clothing)
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_to_cart'])) {
-    $product_id = (int)$_POST['product_id'];
-    $product_type = $_POST['product_type']; // 'accessory' or 'clothing'
-    $quantity = isset($_POST['quantity']) ? max(1, (int)$_POST['quantity']) : 1;
-    // Fetch product details
-    $table = $product_type === 'clothing' ? 'product_inventory' : 'product_inventory'; // You may want to separate tables
-    $stmt = $pdo->prepare("SELECT id, product_name AS name, unit_price AS price, image FROM $table WHERE id = ? LIMIT 1");
-    $stmt->execute([$product_id]);
-    $product = $stmt->fetch(PDO::FETCH_ASSOC);
-    if ($product) {
-        $cart_item = [
-            'id' => $product['id'],
-            'name' => $product['name'],
-            'price' => $product['price'],
-            'image' => $product['image'],
-            'quantity' => $quantity,
-            'type' => $product_type
-        ];
-        // Add or update cart
-        $found = false;
-        foreach ($_SESSION['cart'] as &$item) {
-            if ($item['id'] == $cart_item['id'] && $item['type'] == $cart_item['type']) {
-                $item['quantity'] += $quantity;
-                $found = true;
-                break;
-            }
-        }
-        if (!$found) {
-            $_SESSION['cart'][] = $cart_item;
-        }
-    }
-    header('Location: cart.php');
-    exit;
-}
-
-// Remove from cart
-if (isset($_GET['remove'])) {
-    $remove_id = (int)$_GET['remove'];
-    $_SESSION['cart'] = array_filter($_SESSION['cart'], function($item) use ($remove_id) {
-        return $item['id'] != $remove_id;
-    });
-    header('Location: cart.php');
-    exit;
-}
-
-// Cart display
-$cart_items = $_SESSION['cart'];
-$total = 0;
-foreach ($cart_items as $item) {
-    $total += $item['price'] * $item['quantity'];
-}
+// Simulated cart array — replace this with $_SESSION['cart'] in the future
+$cart = [['name' => 'LESSERAFIM Shoe', 'price' => 190.90, 'qty' => 1]];
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>REKTA | My Cart</title>
-    <link rel="stylesheet" href="../styles/cart.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Your Cart | REKTA Cycling</title>
+  <link rel="stylesheet" href="../styles/landing.css" />
+  <link rel="stylesheet" href="../styles/cart.css" />
 </head>
 <body>
-<header>
-    <div class="container">
-        <div class="nav-container">
-            <div class="logo">REKTA Cycling</div>
-            <div class="nav-right">
-                <nav>
-                    <ul>
-                        <li><a href="#">Men</a></li>
-                        <li><a href="#">Women</a></li>
-                        <li><a href="#">Kids</a></li>
-                        <li><a href="clothing.php">Clothing</a></li>
-                        <li><a href="accessories.php">Accessories</a></li>
-                        <li><a href="cart.php" class="active"><img src="../assets/cart-73-16.png" alt="Cart" style="height:1em;vertical-align:middle;margin-right:6px;">Cart</a></li>
-                        <li><a href="favorites.php">Favorites</a></li>
-                    </ul>
-                </nav>
-            </div>
-        </div>
-    </div>
-</header>
 
-<div class="container">
-    <h1>My Cart</h1>
-    <?php if (empty($cart_items)): ?>
-        <p>Your cart is empty.</p>
+  <!-- Header -->
+  <header>
+    <div class="container">
+      <div class="nav-container" style="display: flex; align-items: center; justify-content: space-between; position: relative;">
+        
+        <!-- Logo -->
+        <div class="logo" style="font-size: 1.8rem; font-weight: bold; text-transform: uppercase; letter-spacing: 2px;">
+          <a href="../index.php" style="color: white;">REKTA</a>
+        </div>
+  
+        <!-- Centered Navigation Menu -->
+        <nav style="position: absolute; left: 50%; transform: translateX(-50%);">
+          <ul style="display: flex; gap: 2rem; list-style: none;">
+            <li><a href="clothing.php">Clothing</a></li>
+            <li><a href="accessories.php">Accessories</a></li>
+            <li><a href="contact us.php">Contact Us</a></li>
+          </ul>
+        </nav>
+  
+        <!-- Search / Cart / User -->
+        <div style="display: flex; align-items: center; gap: 1rem;">
+          <form action="#" method="GET" style="display: flex; align-items: center;">
+            <input type="text" name="q" placeholder="Search products..." style="padding: 0.4rem 0.75rem; border: none; border-radius: 4px 0 0 4px;">
+            <button type="submit" style="padding: 0.4rem 0.75rem; background: white; border: none; border-radius: 0 4px 4px 0; font-weight: bold; cursor: pointer;">
+              🔍
+            </button>
+          </form>
+          <a href="cart.php">
+            <img src="../assets/cart-73-16.png" alt="Cart" style="cursor: pointer;">
+          </a>
+          <a href="../login.php">
+            <img src="../assets/user.png" alt="User" style="cursor: pointer;">
+          </a>
+          <a href="favorites.php">
+            <img src="../assets/favorites.webp"  style="width: 16px; height: 16px; cursor: pointer;">
+          </a>
+        </div>
+  
+      </div>
+    </div>
+  </header>
+
+  <!-- Cart Section -->
+<main>
+    <section class="cart-section">
+  <div class="container">
+    <h2>Your Shopping Cart</h2>
+
+    <?php if (empty($cart)): ?>
+      <div class="cart-empty">
+        <p>Your cart is currently empty.</p>
+        <a href="../index.php" class="btn">Start Shopping</a>
+      </div>
     <?php else: ?>
-        <table class="cart-table">
-            <thead>
-                <tr>
-                    <th>Product</th>
-                    <th>Name</th>
-                    <th>Price</th>
-                    <th>Quantity</th>
-                    <th>Subtotal</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($cart_items as $item): ?>
-                <tr>
-                    <td><img src="<?php echo htmlspecialchars($item['image']); ?>" alt="<?php echo htmlspecialchars($item['name']); ?>" class="cart-img"></td>
-                    <td><?php echo htmlspecialchars($item['name']); ?></td>
-                    <td>₱<?php echo number_format($item['price'], 2); ?></td>
-                    <td><?php echo $item['quantity']; ?></td>
-                    <td>₱<?php echo number_format($item['price'] * $item['quantity'], 2); ?></td>
-                    <td><a href="cart.php?remove=<?php echo $item['id']; ?>" class="remove-btn">Remove</a></td>
-                </tr>
-                <?php endforeach; ?>
-            </tbody>
+      <div class="cart-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Qty</th>
+              <th>Price</th>
+              <th>Subtotal</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php
+              $total = 0;
+              foreach ($cart as $item):
+                $subtotal = $item['price'] * $item['qty'];
+                $total += $subtotal;
+            ?>
+              <tr>
+                <td><?php echo htmlspecialchars($item['name']); ?></td>
+                <td><?php echo $item['qty']; ?></td>
+                <td>$<?php echo number_format($item['price'], 2); ?></td>
+                <td>$<?php echo number_format($subtotal, 2); ?></td>
+              </tr>
+            <?php endforeach; ?>
+          </tbody>
         </table>
-        <div class="cart-total">
-            <h3>Total: ₱<?php echo number_format($total, 2); ?></h3>
-            <button class="checkout-btn">Checkout</button>
-        </div>
-    <?php endif; ?>
-</div>
 
-<footer>
-    <div class="container">
-        &copy; 2025 REKTA Cycling. All rights reserved.
+        <div class="cart-total">
+          <strong>Total: </strong>$<?php echo number_format($total, 2); ?>
+        </div>
+        <a href="checkout.php" class="btn">Proceed to Checkout</a>
+      </div>
+    <?php endif; ?>
+  </div>
+</section>
+</main>
+
+
+  <!-- Footer -->
+  <footer>
+    <div class="container" style="display: flex; flex-wrap: wrap; justify-content: space-between; padding: 2rem 0;">
+      
+      <!-- Column 1: Shop -->
+      <div style="flex: 1 1 200px; margin-bottom: 1rem;">
+        <h3>Shop</h3>
+        <ul style="list-style: none; padding: 0;">
+          <li><a href="clothing.php" style="color: #fff;">Clothing</a></li>
+          <li><a href="accessories.php" style="color: #fff;">Accessories</a></li>
+        </ul>
+      </div>
+  
+      <!-- Column 2: Support -->
+      <div style="flex: 1 1 200px; margin-bottom: 1rem;">
+        <h3>Support</h3>
+        <ul style="list-style: none; padding: 0;">
+          <li><a href="#" style="color: #fff;">Help</a></li>
+          <li><a href="#" style="color: #fff;">Returns</a></li>
+          <li><a href="#" style="color: #fff;">Order Tracker</a></li>
+        </ul>
+      </div>
+  
+      <!-- Column 3: Company Info -->
+      <div style="flex: 1 1 200px; margin-bottom: 1rem;">
+        <h3>Company</h3>
+        <ul style="list-style: none; padding: 0;">
+          <li><a href="#" style="color: #fff;">About Us</a></li>
+          <li><a href="#" style="color: #fff;">Careers</a></li>
+          <li><a href="#" style="color: #fff;">Sustainability</a></li>
+        </ul>
+      </div>
+  
+      <!-- Column 4: Newsletter -->
+      <div style="flex: 1 1 300px; margin-bottom: 1rem;">
+        <h3>Sign up for updates</h3>
+        <form>
+          <input type="email" placeholder="Your email" style="padding: 0.5rem; width: 80%; margin-bottom: 0.5rem;">
+          <br>
+          <button type="submit" class="btn" style="background: #fff; color: #000;">Subscribe</button>
+        </form>
+      </div>
+
+      <!-- Column 5: Social Media -->
+      <div style="flex: 1 1 200px; margin-bottom: 1rem;">
+        <h3>Follow Us</h3>
+        <div style="display: flex; gap: 1rem; align-items: center; margin-inline: auto;">
+          <a href="https://www.facebook.com/rektacycling"><img src="facebook.webp" alt="Facebook" style="width: 32px; height: 32px;"></a>
+          <a href="https://www.instagram.com/rektacycling/"><img src="instagram.webp" alt="Instagram" style="width: 32px; height: 32px;"></a>
+        </div>
+      </div>
+
+  
+    <!-- Bottom Bar -->
+    <div style="background-color: #111; text-align: center; padding: 1rem 0; width: 100%;">
+      <p style="margin: 0;">&copy; 2025 Rekta Cycling. All rights reserved. |
+        <a href="#" style="color: #fff;">Privacy</a> |
+        <a href="#" style="color: #fff;">Terms</a>
+      </p>
     </div>
-</footer>
+  </footer>
+
 </body>
 </html>

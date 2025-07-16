@@ -1,7 +1,7 @@
 <?php
 // Database connection (you can modify these settings)
 $host = 'localhost';
-$dbname = 'school_db';
+$dbname = 'rekta_cycling';
 $username = 'root';
 $password = '';
 
@@ -106,36 +106,52 @@ if (
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>REKTA Cycling | Clothing</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>REKTA Cycling Clothing | Adidas Inspired</title>
+    <link rel="stylesheet" href="../styles/landing.css">
     <link rel="stylesheet" href="../styles/clothing.css">
 </head>
 <body>
 
 <header>
     <div class="container">
-        <div class="nav-container">
-            <div class="logo">REKTA Cycling</div>
-            <div class="nav-right">
-                <nav>
-                    <ul>
-                        <li><a href="#">Men</a></li>
-                        <li><a href="#">Women</a></li>
-                        <li><a href="#">Kids</a></li>
-                        <li><a href="clothing.php">Clothing</a></li>
-                        <li><a href="accessories.php">Accessories</a></li>
-                        <li><a href="cart.php" class="active"><img src="../assets/cart-73-16.png" alt="Cart" style="height:1em;vertical-align:middle;margin-right:6px;">Cart</a></li>
-                        <li><a href="favorites.php">Favorites</a></li>
-                    </ul>
-                </nav>
-                <div class="search-container">
-                    <input type="text" class="search-input" placeholder="Search clothing..." id="searchInput">
-                    <button class="search-btn" onclick="performSearch()">🔍</button>
-                </div>
-            </div>
+      <div class="nav-container" style="display: flex; align-items: center; justify-content: space-between; position: relative;">
+        
+        <!-- Logo -->
+        <div class="logo" style="font-size: 1.8rem; font-weight: bold; text-transform: uppercase; letter-spacing: 2px;">
+          <a href="../index.php" style="color: white;">REKTA</a>
         </div>
+  
+        <!-- Centered Navigation Menu -->
+        <nav style="position: absolute; left: 50%; transform: translateX(-50%);">
+          <ul style="display: flex; gap: 2rem; list-style: none;">
+            <li><a href="clothing.php">Clothing</a></li>
+            <li><a href="accessories.php">Accessories</a></li>
+            <li><a href="contact us.php">Contact Us</a></li>
+          </ul>
+        </nav>
+  
+        <!-- Search / Cart / User -->
+        <div style="display: flex; align-items: center; gap: 1rem;">
+        <form class="search-bar-header" method="POST" action="">
+                <input type="text" name="search" placeholder="Search clothing" value="<?php echo isset($_POST['search']) ? htmlspecialchars($_POST['search']) : ''; ?>" autocomplete="off" />
+                <button type="submit" aria-label="Search">
+                    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" stroke="white" stroke-width="2" fill="none"/><line x1="16.5" y1="16.5" x2="21" y2="21" stroke="white" stroke-width="2"/></svg>
+                </button>
+            </form>
+          <a href="cart.php">
+            <img src="../assets/cart-73-16.png" alt="Cart" style="cursor: pointer;">
+          </a>
+          <a href="login.php">
+            <img src="../assets/user.png" alt="User" style="cursor: pointer;">
+          </a>
+          <a href="favorites.php">
+            <img src="../assets/favorites.webp"  style="width: 16px; height: 16px; cursor: pointer;">
+          </a>
+        </div>
+  
+      </div>
     </div>
-</header>
+  </header>
 
 <section class="hero">
     <div class="hero-content">
