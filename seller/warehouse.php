@@ -2,20 +2,31 @@
 <span class="text-muted small role" style="color: black;font-weight: 500;font-size: 18px;">Admin/Seller</span>
 <?php
 session_start();
+require_once '../config.php';
 
-// Database configuration
-$host = 'localhost';
-$user = 'root';
-$pass = '';
-$db = 'school_db';
-
-// Create connection
-$mysqli = new mysqli("localhost", "root", "", "school_db");
-
-// Check connection
-if ($mysqli->connect_error) {
-    die("Connection failed: " . $mysqli->connect_error);
+if (!isset($_SESSION['user_id'])) {
+    header("Location: ../login.php");
+    exit;
 }
+
+$user_id = $_SESSION['user_id'];
+if ($is_logged_in) {
+    $user_id = $_SESSION['user_id'];
+
+    $stmt = $mysqli->prepare("SELECT user_type_id FROM user_login WHERE id = ?");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $stmt->bind_result($user_type_id);
+    $stmt->fetch();
+    $stmt->close();
+
+    if ($user_type_id != 2) {  // 🚨 Only allow user_type = 1 (customer)
+        header("Location: ../index.php");
+        exit;
+    }
+}
+
+
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -24,7 +35,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $description = $_POST['product_description'] ?? '';
     $price = floatval($_POST['price'] ?? 0);
     $category = $_POST['category'] ?? '';
-    $quantity = intval($_POST['quantity'] ?? 0);
     $color = $_POST['color'] ?? '';
     $size = $_POST['size'] ?? null;
     
@@ -32,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $imagePath = null; // Initialize as null if no image uploaded
     
     if (isset($_FILES['product_image']) && $_FILES['product_image']['error'] === UPLOAD_ERR_OK) {
-        $uploadDir = '../uploads/';
+        $uploadDir = '../assets/';
         
         // Create directory if it doesn't exist
         if (!file_exists($uploadDir)) {
@@ -74,11 +84,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
     
-    if ($quantity < 0) {
-        header('Location: inventorylist.php?added=0&error=invalid_quantity');
-        exit;
-    }
-    
     if (empty($category)) {
         header('Location: inventorylist.php?added=0&error=category_required');
         exit;
@@ -88,16 +93,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $categoryId = ($category === 'Clothing') ? 1 : 2;
     
     try {
-        // Insert into database (now including image path)
+        // Insert into database with starting quantity = 20
         $stmt = $mysqli->prepare("
             INSERT INTO product_inventory 
-            (product_name, product_description, unit_price, category_id, quantity, color, size, is_active, image) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?)
+            (product_name, product_description, unit_price, category_id, color, size, is_active, images, quantity) 
+            VALUES (?, ?, ?, ?, ?, ?, 1, ?, 20)
         ");
-        
-        // Bind parameters (note the extra 's' for image path)
-        $stmt->bind_param('ssdissss', $productName, $description, $price, $categoryId, $quantity, $color, $size, $imagePath);
-        
+
+        // Bind parameters (note: 7 placeholders, 7 parameters)
+        $stmt->bind_param('ssdisss', $productName, $description, $price, $categoryId, $color, $size, $imagePath);
+
         $stmt->execute();
         
         if ($stmt->affected_rows > 0) {
@@ -119,7 +124,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <head>
         <meta charset="utf-8">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-        <link rel="stylesheet" href="../styles/warhus.css">
+        <link rel="stylesheet" href="../styles/warhus.css?v=5">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
         <title>REKTA | Add Product</title>
@@ -131,46 +136,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="container-fluid">
                 <div class="d-flex align-items-center justify-content-between w-100">
                     <div class="d-flex align-items-center">
-                        
-                        <div class="logo" style="font-family: Milker; flex: 0 0 auto;">
-                            <a href="landingpage.html" class="navbar-brand" style="font-family: Milker; font-size: 2.2rem; color: white; text-decoration: none; font-weight: 700; letter-spacing: 2px;">
-                                rekta
-                            </a>
+                            <a class="navbar-brand" href="../index.php">REKTA</a>
+                            <ul class="nav nav-tabs border-0 ms-4">
+                                <li class="nav-item"><a class="custom-nav-link" href="analytics.php"><i class="bi bi-speedometer2 fs-5"></i><span class="ms-2 d-none d-md-inline">DASHBOARD</span></a></li>
+                                <li class="nav-item"><a class="custom-nav-link custom-active" href="warehouse.php"><i class="bi bi-plus-square fs-5"></i><span class="ms-2 d-none d-md-inline">ADD PRODUCT</span></a></li>
+                                <li class="nav-item"><a class="custom-nav-link" href="inventorylist.php"><i class="bi bi-box-seam fs-5"></i><span class="ms-2 d-none d-md-inline">INVENTORY</span></a></li>
+                                <li class="nav-item"><a class="custom-nav-link" href="stockin.php"><i class="bi bi-box-seam fs-5"></i><span class="ms-2 d-none d-md-inline">STOCKS LOGS</span></a></li>
+                                <li class="nav-item"><a class="custom-nav-link" href="orderlogs.php"><i class="bi bi-box-seam fs-5"></i><span class="ms-2 d-none d-md-inline">ORDER LOGS</span></a></li>
+                                <li class="nav-item"><a class="custom-nav-link" href="delist.php"><i class="bi bi-box-seam fs-5"></i><span class="ms-2 d-none d-md-inline">ARCHIVED ITEMS</span></a></li>
+                            </ul>
                         </div>
-                        
-                        <ul class="nav nav-tabs border-0" style="margin-top: 6px;">
-                            <li class="nav-item">
-                                <a class="custom-nav-link" href="analytics.php" title="Dashboard">
-                                    <i class="bi bi-speedometer2 fs-5"></i>
-                                    <span class="d-none d-md-inline ms-2">DASHBOARD</span>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="custom-nav-link custom-active" href="warehouse.php" title="Add Product">
-                                    <i class="bi bi-plus-square fs-5"></i>
-                                    <span class="d-none d-md-inline ms-2">ADD PRODUCT</span>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="custom-nav-link" aria-current="page" href="inventorylist.php" title="Inventory">
-                                    <i class="bi bi-box-seam fs-5"></i>
-                                    <span class="d-none d-md-inline ms-2">INVENTORY</span>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="custom-nav-link" aria-current="page" href="orderlogs.php" title="Orders">
-                                    <i class="bi bi-box-seam fs-5"></i>
-                                    <span class="d-none d-md-inline ms-2">ORDER LOGS</span>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="custom-nav-link" aria-current="page" href="delist.php" title="Archive">
-                                    <i class="bi bi-box-seam fs-5"></i>
-                                    <span class="d-none d-md-inline ms-2">ARCHIVED ITEMS</span>
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
         
                     <div class="d-flex align-items-center gap-4">
                         <div class="d-flex align-items-center gap-3">
@@ -197,7 +172,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <li><hr class="dropdown-divider m-0"></li>
                                 <li class="px-3">  
                                     <div class="d-grid" style="padding-bottom: 6%;"> 
-                                        <a href="../sign.html" class="btn btn-danger">Logout</a>
+                                        <a href="../login.php" class="btn btn-danger">Logout</a>
                                     </div>
                                 </li>
                             </ul>
@@ -208,7 +183,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </nav>
         
         <main class="main-content">
-            <h1 class="row" style="padding-left: 58px;padding-top: 25px;padding-bottom: 28px;"><b>ADD PRODUCT</b></h1>
+            <h1 class="row" style="padding-left: 58px;padding-bottom: 28px;"><b>ADD PRODUCT</b></h1>
             <hr>
             <div class="container mt-5">
                 <form method="post" enctype="multipart/form-data">
@@ -241,10 +216,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <option value="Clothing">Clothing</option>
                                     <option value="Accessories">Accessories</option>
                                 </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="quantity">Quantity *</label>
-                                <input type="number" id="quantity" name="quantity" placeholder="20" min="0" required>
                             </div>
                             <div class="form-group">
                                 <label for="color">Color</label>

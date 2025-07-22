@@ -15,6 +15,19 @@
     margin-bottom: 32px;
 }
 
+.navbar-brand {
+    font-family: 'Milker', sans-serif;
+    color: white; /* or another bold color like #fd6a02 */
+    font-size: 28px;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.navbar-brand:hover {
+    color: #fd6a02;
+    text-decoration: none;
+}
+
 .chart-container {
     flex: 1;
     min-width: 0;

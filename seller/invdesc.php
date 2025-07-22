@@ -7,7 +7,7 @@
     <title>REKTA | Product Details</title>
     <link rel="icon" type="image/x-icon" href="../assets/logo_stockflow.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
-    <link rel="stylesheet" href="../styles/invdesc.css">
+    <link rel="stylesheet" href="../styles/invdesc.css?v=5">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 </head>
@@ -17,19 +17,16 @@
     <div class="container-fluid">
         <div class="d-flex align-items-center justify-content-between w-100">
             <div class="d-flex align-items-center">
-                <div class="logo" style="font-family: Milker;">
-                    <a href="landingpage.html" class="navbar-brand" style="font-size: 2.2rem; color: white; text-decoration: none; font-weight: 700; letter-spacing: 2px;">
-                        rekta
-                    </a>
-                </div>
-                <ul class="nav nav-tabs border-0" style="margin-top: 6px;">
-                    <li class="nav-item"><a class="custom-nav-link" href="analytics.php"><i class="bi bi-speedometer2 fs-5"></i><span class="d-none d-md-inline ms-2">DASHBOARD</span></a></li>
-                    <li class="nav-item"><a class="custom-nav-link" href="warehouse.php"><i class="bi bi-plus-square fs-5"></i><span class="d-none d-md-inline ms-2">ADD PRODUCT</span></a></li>
-                    <li class="nav-item"><a class="custom-nav-link custom-active" href="inventorylist.php"><i class="bi bi-box-seam fs-5"></i><span class="d-none d-md-inline ms-2">INVENTORY</span></a></li>
-                    <li class="nav-item"><a class="custom-nav-link" href="orderlogs.php"><i class="bi bi-box-seam fs-5"></i><span class="d-none d-md-inline ms-2">ORDER LOGS</span></a></li>
-                    <li class="nav-item"><a class="custom-nav-link" href="delist.php"><i class="bi bi-box-seam fs-5"></i><span class="d-none d-md-inline ms-2">ARCHIVED ITEMS</span></a></li>
-                </ul>
-            </div>
+                            <a class="navbar-brand" href="../index.php">REKTA</a>
+                            <ul class="nav nav-tabs border-0 ms-4">
+                                <li class="nav-item"><a class="custom-nav-link" href="analytics.php"><i class="bi bi-speedometer2 fs-5"></i><span class="ms-2 d-none d-md-inline">DASHBOARD</span></a></li>
+                                <li class="nav-item"><a class="custom-nav-link" href="warehouse.php"><i class="bi bi-plus-square fs-5"></i><span class="ms-2 d-none d-md-inline">ADD PRODUCT</span></a></li>
+                                <li class="nav-item"><a class="custom-nav-link custom-active" href="inventorylist.php"><i class="bi bi-box-seam fs-5"></i><span class="ms-2 d-none d-md-inline">INVENTORY</span></a></li>
+                                <li class="nav-item"><a class="custom-nav-link " href="stockin.php"><i class="bi bi-box-seam fs-5"></i><span class="ms-2 d-none d-md-inline">STOCKS LOGS</span></a></li>
+                                <li class="nav-item"><a class="custom-nav-link" href="orderlogs.php"><i class="bi bi-box-seam fs-5"></i><span class="ms-2 d-none d-md-inline">ORDER LOGS</span></a></li>
+                                <li class="nav-item"><a class="custom-nav-link" href="delist.php"><i class="bi bi-box-seam fs-5"></i><span class="ms-2 d-none d-md-inline">ARCHIVED ITEMS</span></a></li>
+                            </ul>
+                        </div>
             <div class="d-flex align-items-center gap-4">
                 <div class="d-flex align-items-center gap-3">
                     <span class="text-white name" style="font-weight: 750;"></span>
@@ -53,7 +50,7 @@
                         <li><hr class="dropdown-divider m-0"></li>
                         <li class="px-3">
                             <div class="d-grid" style="padding-bottom: 6%;">
-                                <a href="../sign.html" class="btn btn-danger">Logout</a>
+                                <a href="../login.php" class="btn btn-danger">Logout</a>
                             </div>
                         </li>
                     </ul>
@@ -70,7 +67,7 @@
         <div class="row-top">
             <div class="infor" id="productDescSection">
                 <?php
-                $mysqli = new mysqli("localhost", "root", "", "school_db");
+                require_once '../config.php';
                 if ($mysqli->connect_error) {
                     die("Connection failed: " . $mysqli->connect_error);
                 }
@@ -92,7 +89,7 @@
                     echo '<h2><strong>' . htmlspecialchars($product['product_name']) . '</strong></h2>';
                     echo '<p>' . htmlspecialchars($product['product_description']) . '</p>';
 
-                    $imageFile = $product['image'];
+                    $imageFile = $product['images'];
                     $imagePath = '../assets/' . $imageFile;
 
                     if (!empty($imageFile) && file_exists($imagePath)) {

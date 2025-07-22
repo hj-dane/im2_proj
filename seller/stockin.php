@@ -21,47 +21,66 @@ if ($user_type_id != 2) {
     exit;
 }
 
-$orders = [];
+$logs = [];
 try {
     $query = "
         SELECT 
-            th.id AS order_id,
-            th.trans_date,
-            th.total_order_amount,
-            pm.payment_method,
-            dt.delivery_type,
-            c.customer_name,
-            td.qty_out,
-            td.price,
-            td.amount,
+            td.id AS log_id,
+            td.product_id,
             pi.product_name,
-            pi.color,
-            pi.size
-        FROM trans_header th
-        JOIN customer c ON th.customer_id = c.id
-        JOIN payment_method pm ON th.payment_method_id = pm.id
-        JOIN delivery_type dt ON th.delivery_type_id = dt.id
-        JOIN trans_details td ON th.id = td.trans_header_id
+            th.trans_date,
+            td.qty_in,
+            td.qty_out,
+            pi.quantity
+        FROM trans_details td
+        JOIN trans_header th ON td.trans_header_id = th.id
         JOIN product_inventory pi ON td.product_id = pi.id
-        ORDER BY th.trans_date DESC, td.trans_header_id DESC";
+        ORDER BY th.trans_date DESC";
 
     $result = $mysqli->query($query);
     while ($row = $result->fetch_assoc()) {
-        $orders[] = $row;
+        $activity = '';
+        $qty_change = 0;
+        $prev_qty = 0;
+        $new_qty = $row['quantity'];
+
+        if ($row['qty_in'] > 0) {
+            $activity = 'Item IN';
+            $qty_change = '+' .$row['qty_in'];
+            $prev_qty = $new_qty - $qty_change;
+        } elseif ($row['qty_out'] > 0) {
+            $activity = 'Item OUT';
+            $qty_change = '-' .$row['qty_out'];
+            $prev_qty = $new_qty - $qty_change;
+        } else {
+            continue; // Skip if no movement
+        }
+
+        $logs[] = [
+            'log_id' => $row['log_id'],
+            'product_id' => $row['product_id'],
+            'product_name' => $row['product_name'],
+            'trans_date' => $row['trans_date'],
+            'activity' => $activity,
+            'qty_change' => $qty_change,
+            'prev_qty' => $prev_qty,
+            'new_qty' => $new_qty
+        ];
     }
 } catch (Exception $e) {
-    $error = "Error loading orders: " . $e->getMessage();
+    $error = "Error loading logs: " . $e->getMessage();
 }
 ?>
+
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
-    <title>REKTA | Order Logs</title>
+    <title>REKTA | Stock Logs</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="../styles/orders.css?v=10">
+    <link rel="stylesheet" href="../styles/logs.css?v=5">
     <link rel="icon" type="image/x-icon" href="../assets/logo_stockflow.png">
 </head>
 <body>
@@ -76,8 +95,8 @@ try {
                             <li class="nav-item"><a class="custom-nav-link" href="analytics.php"><i class="bi bi-speedometer2 fs-5"></i><span class="ms-2 d-none d-md-inline">DASHBOARD</span></a></li>
                             <li class="nav-item"><a class="custom-nav-link" href="warehouse.php"><i class="bi bi-plus-square fs-5"></i><span class="ms-2 d-none d-md-inline">ADD PRODUCT</span></a></li>
                             <li class="nav-item"><a class="custom-nav-link" href="inventorylist.php"><i class="bi bi-box-seam fs-5"></i><span class="ms-2 d-none d-md-inline">INVENTORY</span></a></li>
-                            <li class="nav-item"><a class="custom-nav-link" href="stockin.php"><i class="bi bi-box-seam fs-5"></i><span class="ms-2 d-none d-md-inline">STOCKS LOGS</span></a></li>
-                            <li class="nav-item"><a class="custom-nav-link custom-active" href="orderlogs.php"><i class="bi bi-box-seam fs-5"></i><span class="ms-2 d-none d-md-inline">ORDER LOGS</span></a></li>
+                            <li class="nav-item"><a class="custom-nav-link custom-active" href="stockin.php"><i class="bi bi-box-seam fs-5"></i><span class="ms-2 d-none d-md-inline">STOCKS LOGS</span></a></li>
+                            <li class="nav-item"><a class="custom-nav-link" href="orderlogs.php"><i class="bi bi-box-seam fs-5"></i><span class="ms-2 d-none d-md-inline">ORDER LOGS</span></a></li>
                             <li class="nav-item"><a class="custom-nav-link" href="delist.php"><i class="bi bi-box-seam fs-5"></i><span class="ms-2 d-none d-md-inline">ARCHIVED ITEMS</span></a></li>
                         </ul>
                     </div>
@@ -114,39 +133,37 @@ try {
         <!-- Main Content -->
         <main class="main-content">
             <div class="container-fluid px-4 py-3">
-                <h1 class="row" style="padding-bottom: 28px;"><b>ORDER LOGS</b></h1>
+                <h1 class="row" style="padding-bottom: 28px;"><b>STOCK MONITORING LOGS</b></h1>
                 <div class="table-responsive">
                     <table class="table table-bordered align-middle text-center">
                         <thead class="table-dark">
                             <tr>
+                                <th class="text-center">Log ID</th>
+                                <th class="text-center">Product ID</th>
+                                <th class="text-center">Product Name</th>
                                 <th class="text-center">Date</th>
-                                <th class="text-center">Order ID</th>
-                                <th class="text-center">Customer</th>
-                                <th class="text-center">Product</th>
-                                <th class="text-center">Quantity</th>
-                                <th class="text-center">Price</th>
-                                <th class="text-center">Amount</th>
-                                <th class="text-center">Payment</th>
-                                <th class="text-center">Delivery</th>
+                                <th class="text-center">Activity</th>
+                                <th class="text-center">Quantity Change</th>
+                                <th class="text-center">Previous QTY</th>
+                                <th class="text-center">New QTY</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <?php if (!empty($orders)): ?>
-                                <?php foreach ($orders as $order): ?>
+                            <?php if (!empty($logs)): ?>
+                                <?php foreach ($logs as $log): ?>
                                     <tr>
-                                        <td class="text-center"><?php echo htmlspecialchars($order['trans_date']); ?></td>
-                                        <td class="text-center"><?php echo $order['order_id']; ?></td>
-                                        <td class="text-center"><?php echo htmlspecialchars($order['customer_name']); ?></td>
-                                        <td><?php echo htmlspecialchars($order['product_name'] . ' (' . $order['color'] . ' ' . $order['size'] . ')'); ?></td>
-                                        <td class="text-center"><?php echo $order['qty_out']; ?></td>
-                                        <td class="text-center">₱<?php echo number_format($order['price'], 2); ?></td>
-                                        <td class="text-center">₱<?php echo number_format($order['amount'], 2); ?></td>
-                                        <td class="text-center"><?php echo $order['payment_method']; ?></td>
-                                        <td class="text-center"><?php echo $order['delivery_type']; ?></td>
+                                        <td class="text-center"><?php echo $log['log_id']; ?></td>
+                                        <td class="text-center"><?php echo $log['product_id']; ?></td>
+                                        <td class="text-center"><?php echo htmlspecialchars($log['product_name']); ?></td>
+                                        <td class="text-center"><?php echo $log['trans_date']; ?></td>
+                                        <td class="text-center"><?php echo $log['activity']; ?></td>
+                                        <td class="text-center"><?php echo $log['qty_change']; ?></td>
+                                        <td class="text-center"><?php echo $log['prev_qty']; ?></td>
+                                        <td class="text-center"><?php echo $log['new_qty']; ?></td>
                                     </tr>
                                 <?php endforeach; ?>
                             <?php else: ?>
-                                <tr><td colspan="9">No orders found.</td></tr>
+                                <tr><td colspan="8" class="text-center">No stock logs found.</td></tr>
                             <?php endif; ?>
                         </tbody>
                     </table>

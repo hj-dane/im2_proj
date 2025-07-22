@@ -11,14 +11,22 @@ html, body {
 }
 
 .main-content {
-  margin-top: 110px;
+  margin-top: 90px;
   flex: 1; 
   padding-bottom: 0;
 }
 
-.navbar-brand img {
-  height: 125px; 
-  width: 110px;
+.navbar-brand {
+    font-family: 'Milker', sans-serif;
+    color: white; /* or another bold color like #fd6a02 */
+    font-size: 28px;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.navbar-brand:hover {
+    color: #fd6a02;
+    text-decoration: none;
 }
 
 .navbar-custom {
@@ -168,6 +176,35 @@ th {
 .button-container {
     margin-bottom: 1.5rem;
     padding-top: 1rem;
+}
+
+.product-image-container {
+    margin: 20px 0;
+    text-align: center;
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.product-image-container img {
+    max-width: 100%;
+    max-height: 400px;
+    object-fit: contain;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+}
+
+.product-image-container img:hover {
+    transform: scale(1.02);
+}
+
+.no-image {
+    padding: 20px;
+    text-align: center;
+    color: #666;
+    background: #f8f9fa;
+    border-radius: 8px;
 }
 
 /* Responsive design */

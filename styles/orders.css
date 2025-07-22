@@ -4,6 +4,18 @@ html, body {
     padding: 0;
 }
 
+.navbar-brand {
+    font-family: 'Milker', sans-serif;
+    color: white; /* or another bold color like #fd6a02 */
+    font-size: 28px;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.navbar-brand:hover {
+    color: #fd6a02;
+    text-decoration: none;
+}
 
 .switch {
     position: relative;
@@ -162,10 +174,10 @@ th, td {
 th:nth-child(1), td:nth-child(1) { width: 8%; } 
 th:nth-child(2), td:nth-child(2) { width: 8%; } 
 th:nth-child(3), td:nth-child(3) { width: 8%; } 
-th:nth-child(4), td:nth-child(4) { width: 10%; } 
-th:nth-child(5), td:nth-child(5) { width: 15%; } 
-th:nth-child(6), td:nth-child(6) { width: 15%; } 
-th:nth-child(7), td:nth-child(7) { width: 15%; } 
+th:nth-child(4), td:nth-child(4) { width: 15%; } 
+th:nth-child(5), td:nth-child(5) { width: 7%; } 
+th:nth-child(6), td:nth-child(6) { width: 10%; } 
+th:nth-child(7), td:nth-child(7) { width: 10%; } 
 th:nth-child(8), td:nth-child(8) { width: 7%; } 
 th:nth-child(9), td:nth-child(9) { width: 7%; } 
 

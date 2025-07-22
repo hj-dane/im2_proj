@@ -2,30 +2,57 @@
 <span class="text-muted small role" style="color: black;font-weight: 500;font-size: 18px;">Admin/Seller</span>
 <?php
 session_start();
+require_once '../config.php';
+
+if (!isset($_SESSION['user_id'])) {
+    header("Location: ../login.php");
+    exit;
+}
+
+if (isset($_SESSION['user_id'])) {
+
+    $user_id = $_SESSION['user_id'];
+
+    $stmt = $mysqli->prepare("SELECT user_type_id FROM user_login WHERE id = ?");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $stmt->bind_result($user_type_id);
+    $stmt->fetch();
+    $stmt->close();
+
+    if ($user_type_id != 2) {  // 🚨 Only allow user_type = 1 (customer)
+        header("Location: ../index.php");
+        exit;
+    }
+}
+
 // Enable error reporting for debugging
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// Database configuration
-$host = 'localhost';
-$user = 'root';
-$pass = '';
-$db = 'school_db';
-
-// Create connection
-$mysqli = new mysqli($host, $user, $pass, $db);
-
-if ($mysqli->connect_error) {
-    die("Connection failed: " . $mysqli->connect_error);
-}
 
 // Fetch all active products from database
 $products = [];
-$sql = "SELECT pi.*, c.category_name 
-        FROM product_inventory pi        
-        LEFT JOIN category c ON pi.category_id = c.id        
-        WHERE pi.is_active = 1";
+$sql = "
+SELECT 
+    pi.*, 
+    td.id AS trans_id,
+    td.qty_in,
+    c.category_name
+FROM product_inventory pi
+LEFT JOIN (
+    SELECT td1.*
+    FROM trans_details td1
+    INNER JOIN (
+        SELECT product_id, MAX(id) AS max_id
+        FROM trans_details
+        GROUP BY product_id
+    ) td2 ON td1.product_id = td2.product_id AND td1.id = td2.max_id
+) td ON pi.id = td.product_id
+LEFT JOIN category c ON pi.category_id = c.id
+WHERE pi.is_active = 1
+";
 $result = $mysqli->query($sql);
 
 // Debug: Check for query errors
@@ -60,6 +87,47 @@ $filteredProducts = array_filter($products, function($product) use ($filter, $se
     return $matchesFilter && $matchesSearch;
 });
 
+// Adding inventory qty
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $product_id = $_POST['product_id'] ?? null;
+    $trans_id = $_POST['trans_id'] ?? null;
+    $add_qty = $_POST['add_qty'] ?? null;
+
+    if ($product_id && $trans_id && is_numeric($add_qty)) {
+        // Start transaction for safety
+        $mysqli->begin_transaction();
+
+        try {
+            // Update product_inventory
+            $stmt1 = $mysqli->prepare("UPDATE product_inventory SET quantity = quantity + ? WHERE id = ?");
+            $stmt1->bind_param("ii", $add_qty, $product_id);
+            $stmt1->execute();
+            $stmt1->close();
+
+            // Update trans_details
+            $stmt2 = $mysqli->prepare("UPDATE trans_details SET qty_in = ? WHERE id = ?");
+            $stmt2->bind_param("ii", $add_qty, $trans_id);
+            $stmt2->execute();
+            $stmt2->close();
+
+            // Commit both changes
+            $mysqli->commit();
+
+            // Redirect on success
+            header("Location: inventorylist.php?updated=1");
+            exit;
+
+        } catch (Exception $e) {
+            $mysqli->rollback(); // Roll back both updates on error
+            echo "❌ Error updating inventory: " . $e->getMessage();
+        }
+    } else {
+        echo "❌ Missing or invalid data.";
+    }
+}
+
+
+
 // Pagination
 $itemsPerPage = 10;
 $currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
@@ -78,7 +146,7 @@ $lowStockCount = count(array_filter($products, function($product) {
     <head>
         <meta charset="utf-8">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link rel="stylesheet" href="../styles/inventory.css">
+        <link rel="stylesheet" href="../styles/inventory.css?v=20">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
         <title>REKTA | Product Inventory</title>
@@ -90,44 +158,14 @@ $lowStockCount = count(array_filter($products, function($product) {
                 <div class="container-fluid">
                     <div class="d-flex align-items-center justify-content-between w-100">
                         <div class="d-flex align-items-center">
-                            
-                            <div class="logo" style="font-family: Milker; flex: 0 0 auto;">
-                                <a href="landingpage.html" class="navbar-brand" style="font-family: Milker; font-size: 2.2rem; color: white; text-decoration: none; font-weight: 700; letter-spacing: 2px;">
-                                    rekta
-                                </a>
-                            </div>
-                            
-                            <ul class="nav nav-tabs border-0" style="margin-top: 6px;">
-                                <li class="nav-item">
-                                    <a class="custom-nav-link" href="analytics.php" title="Dashboard">
-                                        <i class="bi bi-speedometer2 fs-5"></i>
-                                        <span class="d-none d-md-inline ms-2">DASHBOARD</span>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="custom-nav-link" href="warehouse.php" title="Add Product">
-                                        <i class="bi bi-plus-square fs-5"></i>
-                                        <span class="d-none d-md-inline ms-2">ADD PRODUCT</span>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="custom-nav-link custom-active" aria-current="page" href="inventorylist.php" title="Inventory">
-                                        <i class="bi bi-box-seam fs-5"></i>
-                                        <span class="d-none d-md-inline ms-2">INVENTORY</span>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="custom-nav-link" aria-current="page" href="orderlogs.php" title="Orders">
-                                        <i class="bi bi-box-seam fs-5"></i>
-                                        <span class="d-none d-md-inline ms-2">ORDER LOGS</span>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="custom-nav-link" aria-current="page" href="delist.php" title="Archive">
-                                        <i class="bi bi-box-seam fs-5"></i>
-                                        <span class="d-none d-md-inline ms-2">ARCHIVED ITEMS</span>
-                                    </a>
-                                </li>
+                            <a class="navbar-brand" href="../index.php">REKTA</a>
+                            <ul class="nav nav-tabs border-0 ms-4">
+                                <li class="nav-item"><a class="custom-nav-link" href="analytics.php"><i class="bi bi-speedometer2 fs-5"></i><span class="ms-2 d-none d-md-inline">DASHBOARD</span></a></li>
+                                <li class="nav-item"><a class="custom-nav-link" href="warehouse.php"><i class="bi bi-plus-square fs-5"></i><span class="ms-2 d-none d-md-inline">ADD PRODUCT</span></a></li>
+                                <li class="nav-item"><a class="custom-nav-link custom-active" href="inventorylist.php"><i class="bi bi-box-seam fs-5"></i><span class="ms-2 d-none d-md-inline">INVENTORY</span></a></li>
+                                <li class="nav-item"><a class="custom-nav-link" href="stockin.php"><i class="bi bi-box-seam fs-5"></i><span class="ms-2 d-none d-md-inline">STOCKS LOGS</span></a></li>
+                                <li class="nav-item"><a class="custom-nav-link" href="orderlogs.php"><i class="bi bi-box-seam fs-5"></i><span class="ms-2 d-none d-md-inline">ORDER LOGS</span></a></li>
+                                <li class="nav-item"><a class="custom-nav-link" href="delist.php"><i class="bi bi-box-seam fs-5"></i><span class="ms-2 d-none d-md-inline">ARCHIVED ITEMS</span></a></li>
                             </ul>
                         </div>
             
@@ -156,7 +194,7 @@ $lowStockCount = count(array_filter($products, function($product) {
                                     <li><hr class="dropdown-divider m-0"></li>
                                     <li class="px-3">  
                                         <div class="d-grid" style="padding-bottom: 6%;"> 
-                                            <a href="../sign.html" class="btn btn-danger">Logout</a>
+                                            <a href="../login.php" class="btn btn-danger">Logout</a>
                                         </div>
                                     </li>
                                 </ul>
@@ -169,17 +207,23 @@ $lowStockCount = count(array_filter($products, function($product) {
                 <div class="container2-fluid px-4 py-3">
                     <div class="row g-4">
                         <div class="col-lg-8 p-4">
-                            <form method="get" action="inventorylist.php" class="d-flex justify-content-between mb-3" id="filterForm">
-                                <select name="filter" id="filterDropdown" class="form-select" style="width: 200px;">
-                                    <option value="all" <?php echo $filter === 'all' ? 'selected' : ''; ?>>All</option>
-                                    <option value="Clothing" <?php echo $filter === 'Clothing' ? 'selected' : ''; ?>>Clothing</option>
-                                    <option value="Accessories" <?php echo $filter === 'Accessories' ? 'selected' : ''; ?>>Accessories</option>
-                                </select>
-                                <div class="input-group" style="width: 250px;">
-                                    <input type="text" name="search" id="searchBox" class="form-control" placeholder="Search..." value="<?php echo htmlspecialchars($search); ?>">
-                                    <button type="submit" class="btn btn-primary">Search</button>
+                            <form method="get" action="inventorylist.php" class="d-flex justify-content-between align-items-center mb-3" id="filterForm">
+                                <div class="d-flex align-items-center">
+                                    <select name="filter" id="filterDropdown" class="form-select me-2" style="width: 200px;">
+                                        <option value="all" <?php echo $filter === 'all' ? 'selected' : ''; ?>>All</option>
+                                        <option value="Clothing" <?php echo $filter === 'Clothing' ? 'selected' : ''; ?>>Clothing</option>
+                                        <option value="Accessories" <?php echo $filter === 'Accessories' ? 'selected' : ''; ?>>Accessories</option>
+                                    </select>
+                                </div>
+
+                                <div style="max-width: 300px; width: 100%;">
+                                    <div class="input-group">
+                                        <input type="text" name="search" id="searchBox" class="form-control" placeholder="Search..." value="<?php echo htmlspecialchars($search); ?>">
+                                        <button type="submit" class="btn btn-primary">Search</button>
+                                    </div>
                                 </div>
                             </form>
+                            
                             <table class="table table-bordered" id="dataTable">
                                 <thead>
                                     <tr>
@@ -188,8 +232,9 @@ $lowStockCount = count(array_filter($products, function($product) {
                                         <th class="text-center">Description</th>
                                         <th class="text-center">Color</th>
                                         <th class="text-center">Size</th>
-                                        <th class="text-center">Quantity (Pcs)</th>
+                                        <th class="text-center">Quantity</th>
                                         <th class="text-center">Unit Price</th>
+                                        <th class="text-center">Add Qty</th>
                                         <th class="text-center">Actions</th>
                                     </tr>
                                 </thead>
@@ -205,6 +250,14 @@ $lowStockCount = count(array_filter($products, function($product) {
                                                 <?php echo $product['quantity']; ?>
                                             </td>
                                             <td class="text-center">₱<?php echo number_format($product['unit_price'], 2); ?></td>
+                                            <td>
+                                                <form method="POST" class="d-flex align-items-center gap-2">
+                                                    <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
+                                                    <input type="hidden" name="trans_id" value="<?= $product['trans_id'] ?? '' ?>"> 
+                                                    <input type="number" name="add_qty" class="form-control" min="0" step="1" required>
+                                                    <button type="submit" class="btn btn-success btn-sm">Confirm</button>
+                                                </form>
+                                            </td>
                                             <td class="text-center">
                                                 <a href="delist.php?id=<?php echo $product['id']; ?>" class="btn btn-success btn-sm">Archive</a>
                                             </td>
@@ -271,6 +324,56 @@ $lowStockCount = count(array_filter($products, function($product) {
                 document.getElementById('filterForm').submit();
             });
         });
+        document.addEventListener('DOMContentLoaded', function () {
+            <?php if (isset($_GET['updated']) && $_GET['updated'] == 1): ?>
+                var updateModal = new bootstrap.Modal(document.getElementById('updateSuccessModal'));
+                updateModal.show();
+            <?php endif; ?>
+
+            <?php if (isset($_GET['archived']) && $_GET['archived'] == 1): ?>
+                var archiveModal = new bootstrap.Modal(document.getElementById('archiveSuccessModal'));
+                archiveModal.show();
+            <?php endif; ?>
+        });
         </script>
+        <?php if (isset($_GET['updated']) && $_GET['updated'] == 1): ?>
+            <!-- ✅ Update Success Modal -->
+            <div class="modal fade" id="updateSuccessModal" tabindex="-1" aria-labelledby="updateSuccessLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-success">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="updateSuccessLabel">Success</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    ✅ Quantity successfully updated.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" data-bs-dismiss="modal">OK</button>
+                </div>
+                </div>
+            </div>
+            </div>
+            <?php endif; ?>
+
+            <?php if (isset($_GET['archived']) && $_GET['archived'] == 1): ?>
+            <!-- 📦 Archive Success Modal -->
+            <div class="modal fade" id="archiveSuccessModal" tabindex="-1" aria-labelledby="archiveSuccessLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-success">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="archiveSuccessLabel">Archived</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    📦 Product has been archived successfully.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" data-bs-dismiss="modal">OK</button>
+                </div>
+                </div>
+            </div>
+            </div>
+            <?php endif; ?>
     </body>
 </html>

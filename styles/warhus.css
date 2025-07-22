@@ -13,7 +13,7 @@ html, body {
 }
 
 .main-content {
-    margin-top: 110px;
+    margin-top: 60px;
     flex: 1; 
     padding: 10px 0% 25px; 
     width: 100%;
@@ -37,6 +37,19 @@ html, body {
     height: 95px;
     display: flex;
     align-items: center;
+}
+
+.navbar-brand {
+    font-family: 'Milker', sans-serif;
+    color: white; /* or another bold color like #fd6a02 */
+    font-size: 28px;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.navbar-brand:hover {
+    color: #fd6a02;
+    text-decoration: none;
 }
 
 .custom-nav-link {
@@ -110,7 +123,7 @@ input, textarea {
     text-align: center;
 }
 
-.submit-btn, .btn {
+.submit-btn {
     background-color: #000;
     color: white;
     padding: 10px 20px;
@@ -129,17 +142,4 @@ input, textarea {
 .dropdown-item:hover{
     color: #000;
     background-color: #e6e3e3;
-}
-
-.custom-footer {
-    background-color: #000;
-    color: white;
-    text-align: left;
-    width: 100%;
-    padding: 10px 15px;
-    height: 100px;
-}
-
-.social-icon {
-    height: 40px;
 }

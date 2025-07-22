@@ -1,0 +1,390 @@
+/* styles/main.css */
+html {
+    scroll-behavior: smooth;
+}
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: white;
+    color: black;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: black;
+    padding: 10px 30px;
+    flex-wrap: wrap;
+    color: white;
+    position: relative;
+}
+
+.navbar-nav .nav-link {
+    color: white; /* default color */
+    position: relative;
+    transition: color 0.3s ease;
+}
+
+.navbar .logo {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.navbar-brand {
+    font-family: 'Milker', sans-serif;
+    color: white; /* or another bold color like #fd6a02 */
+    font-size: 28px;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.navbar-brand:hover {
+    color: #fd6a02;
+    text-decoration: none;
+}
+
+.navbar .nav-links a {
+    color: white;
+    margin: 0 10px;
+    text-decoration: none;
+    position: relative;
+    transition: color 0.3s ease;
+}
+
+.navbar .navbar-nav .nav-link:hover {
+    color: #f15a24 !important;
+}
+
+
+.navbar-nav .nav-link::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 2px;
+    width: 0;
+    background-color: #f15a24;
+    transition: width 0.3s ease;
+}
+
+.navbar-nav .nav-link:hover::after {
+    width: 100%;
+}
+
+.navbar .icons {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.btn-apply {
+    position: relative;
+    background-color: black;
+    color: white;
+    border: none;
+    overflow: hidden;
+    transition: color 0.3s ease;
+}
+
+.btn-apply::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 0;
+    height: 100%;
+    background-color: #f15a24;
+    z-index: 0;
+    transition: width 0.4s ease;
+}
+
+.btn-apply:hover::before {
+    width: 100%;
+}
+
+.btn-apply:hover {
+    color: white;
+}
+
+.btn-apply span {
+    position: relative;
+    z-index: 1;
+}
+
+/* Orange radio button when selected */
+.form-check-input:checked {
+    background-color: #f15a24;
+    border-color: #f15a24;
+}
+
+.form-select {
+    border-color: #f15a24;
+}
+
+.form-select:focus {
+    border-color: #f15a24;
+    box-shadow: 0 0 0 0.2rem rgba(255,165,0,0.25); /* orange glow */
+}
+
+.alert-info {
+    background-color: rgb(240, 171, 146);
+    color: black;
+    border: 1px solid #d94e1d;
+    font-weight: bold;
+}
+
+/* FAVORITES button (btn-outline-secondary) */
+.btn-outline-secondary:hover {
+    background-color: #f15a24;
+    border-color: #f15a24;
+}
+
+.btn-outline-secondary:hover i.fa-heart {
+    color: white;
+}
+
+/* CART button (btn-outline-dark) */
+.btn-outline-dark:hover {
+    background-color: #f15a24;
+    border-color: #f15a24;
+}
+
+.btn-outline-dark:hover i.fa-cart-shopping {
+    color: white;
+}
+
+/* Base styling */
+.btn-shop-now {
+    position: relative;
+    background-color: black;
+    color: #f15a24;
+    border: 2px solid #f15a24;
+    overflow: hidden;
+    transition: color 0.3s ease;
+    z-index: 1;
+}
+
+/* Animated orange background */
+.btn-shop-now::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 0;
+    background-color: #f15a24;
+    transition: width 0.4s ease;
+    z-index: 0;
+}
+
+/* Hover effect */
+.btn-shop-now:hover::before {
+    width: 100%;
+}
+
+/* Ensure the text/content is above the orange background */
+.btn-shop-now span {
+    position: relative;
+    z-index: 2;
+}
+
+/* Text turns white on hover */
+.btn-shop-now:hover {
+    color: white;
+}
+
+.search {
+    background: white;
+    border-radius: 5px;
+    padding: 5px 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.search i {
+    color: black;
+}
+
+.search input {
+    border: none;
+    outline: none;
+    padding: 5px;
+    font-size: 14px;
+}
+
+.search input::placeholder {
+    color: #888;
+}
+
+.icons a i {
+    color: white;
+    font-size: 18px;
+    padding: 6px;
+    border-radius: 4px;
+    transition: border 0.3s;
+}
+
+.icons a i:hover {
+    border: 1px solid white;
+}
+
+header {
+    background-color: #f1f1f1;
+    padding: 20px;
+    text-align: center;
+}
+
+.products {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 20px;
+}
+
+.product {
+    border: 1px solid black;
+    background: white;
+    margin: 10px;
+    padding: 15px;
+    border-radius: 5px;
+    width: 250px;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+button {
+    background-color: black;
+    color: white;
+    padding: 10px;
+    margin: 5px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: gray;
+}
+
+.disabled {
+    background-color: lightgray;
+    cursor: not-allowed;
+}
+
+/* Orange-outline animated style overriding .btn-success */
+.btn-success {
+    position: relative;
+    background-color: white !important;
+    color: #f15a24 !important;
+    border: 2px solid #f15a24 !important;
+    overflow: hidden;
+    transition: color 0.3s ease;
+    z-index: 0; /* base layer */
+}
+
+/* Animated orange background that fills left to right */
+.btn-success::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 0%;
+    background-color: #f15a24;
+    z-index: 0; /* behind text */
+    transition: width 0.4s ease;
+}
+
+/* On hover: fill fully and text turns white */
+.btn-success:hover::before {
+    width: 100%;
+}
+
+.btn-success:hover {
+    color: white !important;
+}
+
+/* ✅ This forces the button’s contents to stay visible above ::before */
+.btn-success > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* Override Bootstrap's btn-danger with blue */
+.btn-danger {
+    background-color: #145DA0;
+    border-color: #145DA0;
+    color: white;
+    transition: background-color 0.3s ease;
+}
+
+.btn-danger:hover {
+    background-color: #104e8b; /* darker blue on hover */
+    border-color: #104e8b;
+    color: white;
+}
+
+/* Completely override Bootstrap's green styling for .btn-outline-success */
+.btn-outline-success {
+    color: #f15a24 !important;
+    background-color: transparent !important;
+    border: 2px solid #f15a24 !important;
+    position: relative;
+    overflow: hidden;
+    transition: color 0.4s ease, border-color 0.4s ease;
+    z-index: 0;
+}
+
+/* Animated orange background fill from left to right */
+.btn-outline-success::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 0;
+    background-color: #f15a24;
+    z-index: -1;
+    transition: width 0.4s ease;
+}
+
+/* On hover: fill orange background and keep text white */
+.btn-outline-success:hover::before {
+    width: 100%;
+}
+
+.btn-outline-success:hover {
+    color: white !important;
+    border-color: #f15a24 !important;
+}
+
+  footer {
+    background: #000;
+    color: #fff;
+    text-align: center;
+    padding: 1rem 0;
+    margin-top: 3rem;
+  }
+
+  footer ul li a {
+    text-decoration: none;
+    color: white;
+  }
+  
+  footer h3 {
+    font-size: 1.1rem;
+    margin-bottom: 0.75rem;
+  }
+
+@font-face {
+    font-family: Rubik;
+    src: url('../assets/RubikMonoOne-Regular.ttf');
+}
+
+@font-face {
+    font-family: Milker;
+    src: url('../assets/Milker.otf');
+}

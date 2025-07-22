@@ -2,39 +2,68 @@
 <span class="text-muted small role" style="color: black;font-weight: 500;font-size: 18px;">Admin/Seller</span>
 <?php
 session_start();
+require_once '../config.php';
 
-// Database configuration
-$host = 'localhost';
-$user = 'root';
-$pass = '';
-$db = 'school_db';
+if (!isset($_SESSION['user_id'])) {
+    header("Location: ../login.php");
+    exit;
+}
 
-// Create connection
-$mysqli = new mysqli("localhost", "root", "", "school_db");
+if ($is_logged_in) {
+    $user_id = $_SESSION['user_id'];
 
-// Check connection
-if ($mysqli->connect_error) {
-    die("Connection failed: " . $mysqli->connect_error);
+    $stmt = $mysqli->prepare("SELECT user_type_id FROM user_login WHERE id = ?");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $stmt->bind_result($user_type_id);
+    $stmt->fetch();
+    $stmt->close();
+
+    if ($user_type_id != 2) {
+        header("Location: ../index.php");
+        exit;
+    }
+}
+
+// Handle archive via GET request
+if (isset($_GET['id']) && is_numeric($_GET['id'])) {
+    $productId = (int)$_GET['id'];
+
+    try {
+        $stmt = $mysqli->prepare("UPDATE product_inventory SET is_active = NULL WHERE id = ?");
+        $stmt->bind_param('i', $productId);
+        $stmt->execute();
+
+        if ($stmt->affected_rows > 0) {
+            header("Location: inventorylist.php?archived=1");
+            exit;
+        } else {
+            $restore_message = '<div class="alert alert-warning">Product not found or already archived.</div>';
+        }
+    } catch (Exception $e) {
+        $restore_message = '<div class="alert alert-danger">Database error while archiving: ' . htmlspecialchars($e->getMessage()) . '</div>';
+    }
 }
 
 // Handle restore action via PHP form POST
 $restore_message = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'restore') {
-    if (!isset($_POST['id']) || !is_numeric($_POST['id'])) {
-        $restore_message = '<div class="alert alert-danger">Invalid product ID</div>';
-    } else {
+    if (isset($_POST['id']) && is_numeric($_POST['id'])) {
         $productId = (int)$_POST['id'];
+
         try {
             $stmt = $mysqli->prepare("UPDATE product_inventory SET is_active = 1 WHERE id = ?");
             $stmt->bind_param('i', $productId);
             $stmt->execute();
+
             if ($stmt->affected_rows > 0) {
-                $restore_message = '<div class="alert alert-success">Product restored successfully.</div>';
+                header("Location: delist.php?restored=1");
+                exit;
             } else {
                 $restore_message = '<div class="alert alert-warning">Product not found or already restored.</div>';
             }
         } catch (Exception $e) {
-            $restore_message = '<div class="alert alert-danger">Database error: ' . htmlspecialchars($e->getMessage()) . '</div>';
+            $restore_message = '<div class="alert alert-danger">Database error while restoring: ' . htmlspecialchars($e->getMessage()) . '</div>';
         }
     }
 }
@@ -49,7 +78,7 @@ try {
             SELECT id, product_name, product_description, color, size, quantity, unit_price 
             FROM product_inventory 
             WHERE is_active IS NULL AND (product_name LIKE ? OR product_description LIKE ?)
-            ORDER BY id DESC
+            ORDER BY id ASC
         ");
         $stmt->bind_param('ss', $like, $like);
     } else {
@@ -57,7 +86,7 @@ try {
             SELECT id, product_name, product_description, color, size, quantity, unit_price 
             FROM product_inventory 
             WHERE is_active IS NULL
-            ORDER BY id DESC
+            ORDER BY id ASC
         ");
     }
     $stmt->execute();
@@ -67,12 +96,13 @@ try {
     $error = "Error loading archived products: " . $e->getMessage();
 }
 ?>
+
 <!DOCTYPE html>
 <html>
     <head>
         <meta charset="utf-8">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-        <link rel="stylesheet" href="../styles/delist.css">
+        <link rel="stylesheet" href="../styles/delist.css?v=5">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
         <title>REKTA | Archived Items</title>
@@ -85,44 +115,14 @@ try {
                 <div class="container-fluid">
                     <div class="d-flex align-items-center justify-content-between w-100">
                         <div class="d-flex align-items-center">
-                            
-                            <div class="logo" style="font-family: Milker; flex: 0 0 auto;">
-                                <a href="landingpage.html" class="navbar-brand" style="font-family: Milker; font-size: 2.2rem; color: white; text-decoration: none; font-weight: 700; letter-spacing: 2px;">
-                                    rekta
-                                </a>
-                            </div>
-                            
-                            <ul class="nav nav-tabs border-0" style="margin-top: 6px;">
-                                <li class="nav-item">
-                                    <a class="custom-nav-link" href="analytics.php" title="Dashboard">
-                                        <i class="bi bi-speedometer2 fs-5"></i>
-                                        <span class="d-none d-md-inline ms-2">DASHBOARD</span>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="custom-nav-link" href="warehouse.php" title="Add Product">
-                                        <i class="bi bi-plus-square fs-5"></i>
-                                        <span class="d-none d-md-inline ms-2">ADD PRODUCT</span>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="custom-nav-link " aria-current="page" href="inventorylist.php" title="Inventory">
-                                        <i class="bi bi-box-seam fs-5"></i>
-                                        <span class="d-none d-md-inline ms-2">INVENTORY</span>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="custom-nav-link" aria-current="page" href="orderlogs.php" title="Orders">
-                                        <i class="bi bi-box-seam fs-5"></i>
-                                        <span class="d-none d-md-inline ms-2">ORDER LOGS</span>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="custom-nav-link custom-active" aria-current="page" href="delist.php" title="Archive">
-                                        <i class="bi bi-box-seam fs-5"></i>
-                                        <span class="d-none d-md-inline ms-2">ARCHIVED ITEMS</span>
-                                    </a>
-                                </li>
+                            <a class="navbar-brand" href="../index.php">REKTA</a>
+                            <ul class="nav nav-tabs border-0 ms-4">
+                                <li class="nav-item"><a class="custom-nav-link" href="analytics.php"><i class="bi bi-speedometer2 fs-5"></i><span class="ms-2 d-none d-md-inline">DASHBOARD</span></a></li>
+                                <li class="nav-item"><a class="custom-nav-link" href="warehouse.php"><i class="bi bi-plus-square fs-5"></i><span class="ms-2 d-none d-md-inline">ADD PRODUCT</span></a></li>
+                                <li class="nav-item"><a class="custom-nav-link" href="inventorylist.php"><i class="bi bi-box-seam fs-5"></i><span class="ms-2 d-none d-md-inline">INVENTORY</span></a></li>
+                                <li class="nav-item"><a class="custom-nav-link" href="stockin.php"><i class="bi bi-box-seam fs-5"></i><span class="ms-2 d-none d-md-inline">STOCKS LOGS</span></a></li>
+                                <li class="nav-item"><a class="custom-nav-link" href="orderlogs.php"><i class="bi bi-box-seam fs-5"></i><span class="ms-2 d-none d-md-inline">ORDER LOGS</span></a></li>
+                                <li class="nav-item"><a class="custom-nav-link custom-active" href="delist.php"><i class="bi bi-box-seam fs-5"></i><span class="ms-2 d-none d-md-inline">ARCHIVED ITEMS</span></a></li>
                             </ul>
                         </div>
             
@@ -151,7 +151,7 @@ try {
                                     <li><hr class="dropdown-divider m-0"></li>
                                     <li class="px-3">  
                                         <div class="d-grid" style="padding-bottom: 6%;"> 
-                                            <a href="../sign.html" class="btn btn-danger">Logout</a>
+                                            <a href="../login.php" class="btn btn-danger">Logout</a>
                                         </div>
                                     </li>
                                 </ul>

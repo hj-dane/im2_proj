@@ -11,14 +11,22 @@ html, body {
 }
 
 .main-content {
-    margin-top: 110px;
+    margin-top: 90px;
     flex: 1; 
     padding-bottom: 0;
 }
 
-.navbar-brand img {
-    height: 125px; 
-    width: 110px;
+.navbar-brand {
+    font-family: 'Milker', sans-serif;
+    color: white; /* or another bold color like #fd6a02 */
+    font-size: 28px;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.navbar-brand:hover {
+    color: #fd6a02;
+    text-decoration: none;
 }
 
 .navbar-custom {
@@ -60,7 +68,7 @@ html, body {
 
 
 .container2 {
-    width: 95%;
+    width: 100%;
     max-width: 1900px;
     margin: 0 auto;
     background-color: #f4f4f4;
@@ -75,6 +83,7 @@ html, body {
     width: 100%;
     border-collapse: collapse;
     border-radius: 10px;
+    align-items: center;
 }
 
 .table th, 
@@ -97,12 +106,13 @@ th, td {
 
 th:nth-child(1), td:nth-child(1) { width: 5%; } 
 th:nth-child(2), td:nth-child(2) { width: 10%; } 
-th:nth-child(3), td:nth-child(3) { width: 30%; } 
+th:nth-child(3), td:nth-child(3) { width: 20%; } 
 th:nth-child(4), td:nth-child(4) { width: 7%; } 
 th:nth-child(5), td:nth-child(5) { width: 7%; } 
-th:nth-child(6), td:nth-child(6) { width: 10%; } 
+th:nth-child(6), td:nth-child(6) { width: 8%; } 
 th:nth-child(7), td:nth-child(7) { width: 8%; } 
-th:nth-child(8), td:nth-child(8) { width: 6.5%; } 
+th:nth-child(8), td:nth-child(8) { width: 12%; } 
+th:nth-child(9), td:nth-child(9) { width: 6.5%; } 
 
 #dataTable {
     margin-bottom: 5px; 
@@ -132,20 +142,6 @@ th:nth-child(8), td:nth-child(8) { width: 6.5%; }
     color: white;
 }
 
-/* Footer */
-.custom-footer {
-    background-color: #000;
-    color: white;
-    text-align: left;
-    width: 100%;
-    padding: 10px 15px;
-    height: 100px;
-}
-
-.social-icon {
-    height: 40px;
-}
-
 .product-link {
     color: #000;
     text-decoration: none;
@@ -163,6 +159,7 @@ th:nth-child(8), td:nth-child(8) { width: 6.5%; }
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     margin-right: 1%;
+    width: 100%;
 }
 
 .inventory-summary-header {

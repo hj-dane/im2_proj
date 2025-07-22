@@ -85,7 +85,7 @@ html, body {
 }
 
 .main-content {
-    margin-top: 80px;
+    margin-top: 110px;
     margin-left: 30px;
     margin-right: 30px;
     flex: 1; 
@@ -171,14 +171,14 @@ th, td {
     text-overflow: ellipsis; 
 }
 
-th:nth-child(1), td:nth-child(1) { width: 5%; } 
-th:nth-child(2), td:nth-child(2) { width: 15%; } 
-th:nth-child(3), td:nth-child(3) { width: 30%; } 
-th:nth-child(4), td:nth-child(4) { width: 7%; } 
-th:nth-child(5), td:nth-child(5) { width: 7%; } 
-th:nth-child(6), td:nth-child(6) { width: 10%; } 
+th:nth-child(1), td:nth-child(1) { width: 8%; } 
+th:nth-child(2), td:nth-child(2) { width: 8%; } 
+th:nth-child(3), td:nth-child(3) { width: 15%; } 
+th:nth-child(4), td:nth-child(4) { width: 10%; } 
+th:nth-child(5), td:nth-child(5) { width: 10%; } 
+th:nth-child(6), td:nth-child(6) { width: 8%; } 
 th:nth-child(7), td:nth-child(7) { width: 8%; } 
-th:nth-child(8), td:nth-child(8) { width: 6.5%; } 
+th:nth-child(8), td:nth-child(8) { width: 8%; } 
 
 #dataTable {
     margin-bottom: 5px; 
@@ -277,6 +277,70 @@ th:nth-child(8), td:nth-child(8) { width: 6.5%; }
 
 #lowStockList .small {
     font-size: 1rem;
+}
+
+/* Order status badges */
+.badge {
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.bg-success {
+    background-color: #28a745;
+    color: white;
+}
+
+.bg-warning {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+/* Table styles */
+#dataTable {
+    font-size: 16px;
+}
+
+#dataTable th {
+    background-color: #000;
+    font-weight: 700;
+    position: sticky;
+    top: 0;
+}
+
+/* Pagination */
+.pagination {
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.page-item.active .page-link {
+    background-color: #6c757d;
+    border-color: #6c757d;
+}
+
+.page-link {
+    color: #6c757d;
+}
+
+.page-item.disabled .page-link {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* Search box */
+#searchBox {
+    max-width: 300px;
+    margin-left: auto;
+}
+
+/* Modal styles */
+.modal-body table {
+    font-size: 16px;
+}
+
+.modal-body th {
+    background-color: #f8f9fa;
 }
 
 /* Responsive Design */

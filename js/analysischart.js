@@ -153,7 +153,9 @@ function createCategoryChart() {
 
 function updateCardStats() {
     try {
-        const totalProducts = inventoryData.length;
+        const activeProducts = inventoryData.filter(item => item.is_active === "1" || item.is_active === 1);
+
+        const totalProducts = activeProducts.length;
         
         const lowStockThreshold = 20;
         const lowStockItems = inventoryData.filter(item => {
